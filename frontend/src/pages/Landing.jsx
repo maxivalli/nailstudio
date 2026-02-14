@@ -82,12 +82,12 @@ const Landing = () => {
         {/* Stats strip */}
         <div className="landing__stats">
           <div className="landing__stat">
-            <span className="landing__stat-number">500+</span>
+            <span className="landing__stat-number">100+</span>
             <span className="landing__stat-label">Clientas felices</span>
           </div>
           <div className="landing__stat-divider" />
           <div className="landing__stat">
-            <span className="landing__stat-number">5★</span>
+            <span className="landing__stat-number">✫✫✫✫✫</span>
             <span className="landing__stat-label">Valoración</span>
           </div>
           <div className="landing__stat-divider" />

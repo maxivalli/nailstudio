@@ -39,7 +39,7 @@
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-end;
-  padding: 1.25rem;
+  padding: 0.5rem;
   gap: 4px;
   transition: background var(--transition);
 }
@@ -52,8 +52,7 @@
   font-size: 9px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0);
-  transition: color var(--transition);
+  color: white;
   background: var(--espresso);
   padding: 3px 8px;
 }
@@ -62,12 +61,6 @@
   font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 300;
-  color: rgba(255,255,255,0);
-  transition: color var(--transition);
-}
-
-.gallery__item:hover .gallery__tag,
-.gallery__item:hover .gallery__title {
   color: white;
 }
 
