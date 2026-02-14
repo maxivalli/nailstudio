@@ -72,7 +72,7 @@ export const sendClientConfirmation = async (appointment) => {
 
   try {
     const message = `
-🎨 *Nail Studio* - Turno Confirmado
+🎨 *SY Studio* - Turno Confirmado
 
 ¡Hola ${appointment.name}! 
 

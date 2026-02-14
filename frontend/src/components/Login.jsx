@@ -108,14 +108,6 @@ const Login = ({ onLoginSuccess }) => {
             )}
           </button>
         </form>
-
-        <div className="login-footer">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <circle cx="6" cy="6" r="5.5" stroke="currentColor"/>
-            <path d="M6 3.5V6H8.5" stroke="currentColor" strokeLinecap="round"/>
-          </svg>
-          <span>Usuario: admin | Contraseña: admin123</span>
-        </div>
       </div>
     </div>
   );
