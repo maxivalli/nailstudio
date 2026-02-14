@@ -1,68 +1,69 @@
-import pg from 'pg';
+import express from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
+import { initDB } from './db/index.js';
+import appointmentsRouter from './routes/appointments.js';
+import galleryRouter from './routes/gallery.js';
+import authRouter from './routes/auth.js';
+import { initWhatsApp } from './services/whatsapp.js';
 
 dotenv.config();
 
-const { Pool } = pg;
-
-// Soporta DATABASE_URL (Neon/Render) o variables separadas (local)
-export const pool = new Pool(
-  process.env.DATABASE_URL
-    ? {
-        connectionString: process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false },
-      }
-    : {
-        host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT || 5432,
-        database: process.env.DB_NAME || 'nail_salon',
-        user: process.env.DB_USER || 'postgres',
-        password: process.env.DB_PASSWORD || 'postgres',
-      }
-);
-
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
+process.on('uncaughtException', (err) => {
+  console.error('CRASH:', err.message, err.stack);
+  process.exit(1);
 });
 
-pool.on('connect', () => {
-  console.log('✅ Database connected');
+process.on('unhandledRejection', (reason) => {
+  console.error('UNHANDLED REJECTION:', reason);
+  process.exit(1);
 });
 
-export const initDB = async () => {
-  const client = await pool.connect();
-  try {
-    console.log('🔄 Inicializando base de datos...');
+const app = express();
+const PORT = process.env.PORT || 3001;
 
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS appointments (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        whatsapp VARCHAR(20) NOT NULL,
-        appointment_date DATE NOT NULL,
-        appointment_hour SMALLINT NOT NULL CHECK (appointment_hour >= 8 AND appointment_hour < 20),
-        status VARCHAR(20) DEFAULT 'confirmed' CHECK (status IN ('confirmed','cancelled','completed')),
-        created_at TIMESTAMP DEFAULT NOW(),
-        UNIQUE(appointment_date, appointment_hour)
-      );
+// SSE clients store
+export const sseClients = new Set();
 
-      CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointment_date);
-      CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status);
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
+app.use(express.json());
 
-      CREATE TABLE IF NOT EXISTS gallery (
-        id SERIAL PRIMARY KEY,
-        image_url TEXT NOT NULL,
-        title VARCHAR(100),
-        category VARCHAR(50) DEFAULT 'general',
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
+// SSE endpoint for real-time updates
+app.get('/api/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
 
-    console.log('✅ Database initialized successfully');
-  } catch (err) {
-    console.error('❌ DB init error:', err.message);
-    throw err;
-  } finally {
-    client.release();
-  }
+  sseClients.add(res);
+
+  req.on('close', () => {
+    sseClients.delete(res);
+  });
+});
+
+// Helper to broadcast to all SSE clients
+export const broadcast = (event, data) => {
+  const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+  sseClients.forEach(client => client.write(message));
 };
+
+app.use('/api/auth', authRouter);
+app.use('/api/appointments', appointmentsRouter);
+app.use('/api/gallery', galleryRouter);
+
+app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
+
+const start = async () => {
+  await initDB();
+
+  // Inicializar WhatsApp (Twilio)
+  initWhatsApp();
+
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`📝 Admin credentials - User: ${process.env.ADMIN_USERNAME || 'admin'}`);
+  });
+};
+
+start();
