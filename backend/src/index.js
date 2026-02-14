@@ -8,6 +8,7 @@ import authRouter from './routes/auth.js';
 import { initWhatsApp } from './services/whatsapp.js';
 
 dotenv.config();
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'CARGADA ✅' : 'VACÍA ❌');
 
 process.on('uncaughtException', (err) => {
   console.error('CRASH:', err.message, err.stack);
