@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nail_salon_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nail_salon
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: nail_salon_backend
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: nail_salon
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build: ./frontend
+    container_name: nail_salon_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  postgres_data:
