@@ -1,4 +1,8 @@
-const BASE = '/api';
+// En producción usa VITE_API_URL (variable de entorno de Vercel)
+// En desarrollo usa el proxy de Vite (/api → localhost:3001)
+const BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api';
 
 // Helper para obtener token
 const getToken = () => localStorage.getItem('admin_token');
@@ -19,7 +23,7 @@ export const api = {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
   }).then(r => r.json()),
-  
+
   verifyToken: () => fetch(`${BASE}/auth/verify`, {
     headers: authHeaders(),
   }).then(r => r.json()),
@@ -46,7 +50,7 @@ export const api = {
     headers: authHeaders(),
     body: JSON.stringify({ status }),
   }).then(r => r.json()),
-  deleteAppointment: (id) => fetch(`${BASE}/appointments/${id}`, { 
+  deleteAppointment: (id) => fetch(`${BASE}/appointments/${id}`, {
     method: 'DELETE',
     headers: authHeaders(),
   }).then(r => r.json()),
@@ -67,7 +71,7 @@ export const api = {
     headers: authHeaders(),
     body: JSON.stringify(data),
   }).then(r => r.json()),
-  deleteGalleryItem: (id) => fetch(`${BASE}/gallery/${id}`, { 
+  deleteGalleryItem: (id) => fetch(`${BASE}/gallery/${id}`, {
     method: 'DELETE',
     headers: authHeaders(),
   }).then(r => r.json()),
