@@ -38,14 +38,22 @@ export const initWhatsApp = () => {
 };
 
 const formatDate = (dateStr) => {
-  const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-  
-  const date = new Date(dateStr + 'T12:00:00');
+  const days = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+  const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+  // PostgreSQL puede devolver un objeto Date o un string — normalizamos
+  let dateOnly;
+  if (dateStr instanceof Date) {
+    dateOnly = dateStr.toISOString().split("T")[0];
+  } else {
+    dateOnly = String(dateStr).split("T")[0];
+  }
+
+  const date = new Date(dateOnly + "T12:00:00");
   const dayName = days[date.getDay()];
   const day = date.getDate();
   const month = months[date.getMonth()];
-  
+
   return `${dayName} ${day} de ${month}`;
 };
 
