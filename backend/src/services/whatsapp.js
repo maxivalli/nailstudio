@@ -60,7 +60,7 @@ const formatDate = (dateStr) => {
 // Formatear número para Twilio
 const formatPhoneNumber = (phone) => {
   let cleaned = phone.replace(/\D/g, '');
-  if (!cleaned.startsWith('54')) cleaned = '54' + cleaned;
+  if (!cleaned.startsWith('549')) cleaned = '549' + cleaned;
   return `whatsapp:+${cleaned}`;
 };
 

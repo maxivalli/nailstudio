@@ -1,16 +1,37 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { api } from '../api';
-import './BookingCalendar.css';
+import React, { useState, useEffect, useCallback } from "react";
+import { api } from "../api";
+import "./BookingCalendar.css";
 
 const HOURS = Array.from({ length: 12 }, (_, i) => i + 8); // 8..19
-const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-const DAY_NAMES_FULL = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+const DAY_NAMES_FULL = [
+  "Domingo",
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+];
+const MONTH_NAMES = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+];
 
 const toDateStr = (d) => {
   const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 };
 
@@ -40,35 +61,58 @@ const isPast = (d, hour) => {
 // ─── Step indicator ─────────────────────────────────────────────────────────
 const Steps = ({ current }) => (
   <div className="bc-steps">
-    {['Elegí el día', 'Elegí la hora', 'Tus datos'].map((label, i) => (
+    {["Elegí el día", "Elegí la hora", "Tus datos"].map((label, i) => (
       <React.Fragment key={i}>
-        <div className={`bc-step ${current === i ? 'bc-step--active' : ''} ${current > i ? 'bc-step--done' : ''}`}>
+        <div
+          className={`bc-step ${current === i ? "bc-step--active" : ""} ${current > i ? "bc-step--done" : ""}`}
+        >
           <div className="bc-step__dot">
-            {current > i
-              ? <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4.5 7.5L8.5 2.5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/></svg>
-              : <span>{i + 1}</span>
-            }
+            {current > i ? (
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path
+                  d="M2 5L4.5 7.5L8.5 2.5"
+                  stroke="white"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            ) : (
+              <span>{i + 1}</span>
+            )}
           </div>
           <span className="bc-step__label">{label}</span>
         </div>
-        {i < 2 && <div className={`bc-step__line ${current > i ? 'bc-step__line--done' : ''}`} />}
+        {i < 2 && (
+          <div
+            className={`bc-step__line ${current > i ? "bc-step__line--done" : ""}`}
+          />
+        )}
       </React.Fragment>
     ))}
   </div>
 );
 
 // ─── Week Calendar ───────────────────────────────────────────────────────────
-const WeekCalendar = ({ weekStart, appointments, selectedDate, onSelectDate, onPrevWeek, onNextWeek }) => {
-  const today = new Date(); today.setHours(0,0,0,0);
+const WeekCalendar = ({
+  weekStart,
+  appointments,
+  selectedDate,
+  onSelectDate,
+  onPrevWeek,
+  onNextWeek,
+}) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   // Get Mon-Sat (6 days)
   const days = Array.from({ length: 6 }, (_, i) => addDays(weekStart, i));
 
   // Build a set of occupied slots per date
   const occupiedMap = {};
-  appointments.forEach(a => {
-    const key = typeof a.appointment_date === 'string'
-      ? a.appointment_date.slice(0, 10)
-      : toDateStr(new Date(a.appointment_date));
+  appointments.forEach((a) => {
+    const key =
+      typeof a.appointment_date === "string"
+        ? a.appointment_date.slice(0, 10)
+        : toDateStr(new Date(a.appointment_date));
     if (!occupiedMap[key]) occupiedMap[key] = [];
     occupiedMap[key].push(a.appointment_hour);
   });
@@ -88,13 +132,23 @@ const WeekCalendar = ({ weekStart, appointments, selectedDate, onSelectDate, onP
       <div className="bc-week__nav">
         <button className="bc-nav-btn" onClick={onPrevWeek}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+            <path
+              d="M10 3L5 8L10 13"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+            />
           </svg>
         </button>
         <span className="bc-week__label">{weekLabel()}</span>
         <button className="bc-nav-btn" onClick={onNextWeek}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+            <path
+              d="M6 3L11 8L6 13"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+            />
           </svg>
         </button>
       </div>
@@ -114,11 +168,11 @@ const WeekCalendar = ({ weekStart, appointments, selectedDate, onSelectDate, onP
             <button
               key={dateStr}
               className={[
-                'bc-day',
-                isPastDay || allFull ? 'bc-day--disabled' : '',
-                isSelected ? 'bc-day--selected' : '',
-                day.getTime() === today.getTime() ? 'bc-day--today' : '',
-              ].join(' ')}
+                "bc-day",
+                isPastDay || allFull ? "bc-day--disabled" : "",
+                isSelected ? "bc-day--selected" : "",
+                day.getTime() === today.getTime() ? "bc-day--today" : "",
+              ].join(" ")}
               onClick={() => !isPastDay && !allFull && onSelectDate(dateStr)}
               disabled={isPastDay || allFull}
             >
@@ -126,28 +180,43 @@ const WeekCalendar = ({ weekStart, appointments, selectedDate, onSelectDate, onP
               <span className="bc-day__num">{day.getDate()}</span>
               {/* Slot dots visualization */}
               <div className="bc-day__dots">
-                {HOURS.map(h => (
+                {HOURS.map((h) => (
                   <div
                     key={h}
-                    className={`bc-day__dot ${occupied.includes(h) ? 'bc-day__dot--taken' : ''} ${isPastDay || isPast(day, h) ? 'bc-day__dot--past' : ''}`}
+                    className={`bc-day__dot ${occupied.includes(h) ? "bc-day__dot--taken" : ""} ${isPastDay || isPast(day, h) ? "bc-day__dot--past" : ""}`}
                   />
                 ))}
               </div>
               {!isPastDay && (
                 <span className="bc-day__slots">
-                  {allFull ? 'Sin lugar' : `${freeSlots} libre${freeSlots !== 1 ? 's' : ''}`}
+                  {allFull
+                    ? "Sin lugar"
+                    : `${freeSlots} libre${freeSlots !== 1 ? "s" : ""}`}
                 </span>
               )}
-              {isPastDay && <span className="bc-day__slots bc-day__slots--past">Pasado</span>}
+              {isPastDay && (
+                <span className="bc-day__slots bc-day__slots--past">
+                  Pasado
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
       <div className="bc-week__legend">
-        <div className="bc-legend-item"><div className="bc-legend-dot bc-legend-dot--free"/><span>Disponible</span></div>
-        <div className="bc-legend-item"><div className="bc-legend-dot bc-legend-dot--taken"/><span>Ocupado</span></div>
-        <div className="bc-legend-item"><div className="bc-legend-dot bc-legend-dot--past"/><span>Pasado</span></div>
+        <div className="bc-legend-item">
+          <div className="bc-legend-dot bc-legend-dot--free" />
+          <span>Disponible</span>
+        </div>
+        <div className="bc-legend-item">
+          <div className="bc-legend-dot bc-legend-dot--taken" />
+          <span>Ocupado</span>
+        </div>
+        <div className="bc-legend-item">
+          <div className="bc-legend-dot bc-legend-dot--past" />
+          <span>Pasado</span>
+        </div>
       </div>
     </div>
   );
@@ -160,22 +229,23 @@ const HourPicker = ({ date, onSelectSlot, onBack }) => {
 
   useEffect(() => {
     setLoading(true);
-    api.getSlots(date)
-      .then(res => {
-        console.log('📥 Respuesta del servidor:', res);
+    api
+      .getSlots(date)
+      .then((res) => {
+        console.log("📥 Respuesta del servidor:", res);
         if (res.success && res.data) {
           setSlots(res.data);
         } else {
-          console.error('❌ Error en la respuesta:', {
+          console.error("❌ Error en la respuesta:", {
             success: res.success,
             error: res.error,
-            fullResponse: res
+            fullResponse: res,
           });
           setSlots([]);
         }
       })
-      .catch(err => {
-        console.error('❌ Error al cargar horarios:', err);
+      .catch((err) => {
+        console.error("❌ Error al cargar horarios:", err);
         setSlots([]);
       })
       .finally(() => {
@@ -183,7 +253,7 @@ const HourPicker = ({ date, onSelectSlot, onBack }) => {
       });
   }, [date]);
 
-  const d = new Date(date + 'T12:00:00');
+  const d = new Date(date + "T12:00:00");
   const dayLabel = `${DAY_NAMES_FULL[d.getDay()]} ${d.getDate()} de ${MONTH_NAMES[d.getMonth()]}`;
 
   return (
@@ -191,7 +261,12 @@ const HourPicker = ({ date, onSelectSlot, onBack }) => {
       <div className="bc-hours__header">
         <button className="bc-back" onClick={onBack}>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+            <path
+              d="M9 2L4 7L9 12"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+            />
           </svg>
           Volver
         </button>
@@ -200,19 +275,22 @@ const HourPicker = ({ date, onSelectSlot, onBack }) => {
 
       {loading ? (
         <div className="bc-loading">
-          <div className="bc-spinner"/><span>Cargando horarios...</span>
+          <div className="bc-spinner" />
+          <span>Cargando horarios...</span>
         </div>
       ) : (
         <div className="bc-hours__grid">
-          {slots.map(slot => (
+          {slots.map((slot) => (
             <button
               key={slot.hour}
-              className={`bc-slot ${!slot.available ? 'bc-slot--taken' : ''}`}
+              className={`bc-slot ${!slot.available ? "bc-slot--taken" : ""}`}
               onClick={() => slot.available && onSelectSlot(slot)}
               disabled={!slot.available}
             >
               <span className="bc-slot__time">{slot.label}</span>
-              <span className="bc-slot__end">– {(slot.hour + 1).toString().padStart(2,'0')}:00</span>
+              <span className="bc-slot__end">
+                – {(slot.hour + 1).toString().padStart(2, "0")}:00
+              </span>
               {!slot.available && (
                 <span className="bc-slot__badge">Ocupado</span>
               )}
@@ -226,25 +304,26 @@ const HourPicker = ({ date, onSelectSlot, onBack }) => {
 
 // ─── Booking Form ─────────────────────────────────────────────────────────────
 const BookingForm = ({ date, slot, onBack, onSuccess }) => {
-  const [form, setForm] = useState({ name: '', whatsapp: '' });
+  const [form, setForm] = useState({ name: "", whatsapp: "" });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const d = new Date(date + 'T12:00:00');
+  const d = new Date(date + "T12:00:00");
   const dayLabel = `${DAY_NAMES_FULL[d.getDay()]} ${d.getDate()} de ${MONTH_NAMES[d.getMonth()]}`;
 
-  const handleChange = e => {
-    const val = e.target.name === 'whatsapp'
-      ? e.target.value.replace(/\D/g, '')
-      : e.target.value;
-    setForm(p => ({ ...p, [e.target.name]: val }));
-    setError('');
+  const handleChange = (e) => {
+    const val =
+      e.target.name === "whatsapp"
+        ? e.target.value.replace(/\D/g, "")
+        : e.target.value;
+    setForm((p) => ({ ...p, [e.target.name]: val }));
+    setError("");
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim()) return setError('Ingresá tu nombre');
-    if (form.whatsapp.length < 8) return setError('Ingresá un WhatsApp válido');
+    if (!form.name.trim()) return setError("Ingresá tu nombre");
+    if (form.whatsapp.length < 8) return setError("Ingresá un WhatsApp válido");
 
     setLoading(true);
     try {
@@ -257,10 +336,10 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
       if (res.success) {
         onSuccess(res.data);
       } else {
-        setError(res.error || 'Ocurrió un error');
+        setError(res.error || "Ocurrió un error");
       }
     } catch {
-      setError('Error de conexión. Intentá de nuevo.');
+      setError("Error de conexión. Intentá de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -270,7 +349,12 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
     <div className="bc-form fade-in">
       <button className="bc-back" onClick={onBack}>
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+          <path
+            d="M9 2L4 7L9 12"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+          />
         </svg>
         Volver
       </button>
@@ -279,17 +363,44 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
       <div className="bc-summary">
         <div className="bc-summary__item">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <rect x="1.5" y="2" width="11" height="11" rx="1" stroke="currentColor" strokeWidth="1"/>
-            <path d="M1.5 5.5H12.5M5 1.5V3.5M9 1.5V3.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+            <rect
+              x="1.5"
+              y="2"
+              width="11"
+              height="11"
+              rx="1"
+              stroke="currentColor"
+              strokeWidth="1"
+            />
+            <path
+              d="M1.5 5.5H12.5M5 1.5V3.5M9 1.5V3.5"
+              stroke="currentColor"
+              strokeWidth="1"
+              strokeLinecap="round"
+            />
           </svg>
           <span>{dayLabel}</span>
         </div>
         <div className="bc-summary__item">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1"/>
-            <path d="M7 4V7.5L9.5 9" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+            <circle
+              cx="7"
+              cy="7"
+              r="5.5"
+              stroke="currentColor"
+              strokeWidth="1"
+            />
+            <path
+              d="M7 4V7.5L9.5 9"
+              stroke="currentColor"
+              strokeWidth="1"
+              strokeLinecap="round"
+            />
           </svg>
-          <span>{slot.label} – {(slot.hour + 1).toString().padStart(2,'0')}:00 (1 hora)</span>
+          <span>
+            {slot.label} – {(slot.hour + 1).toString().padStart(2, "0")}:00 (1
+            hora)
+          </span>
         </div>
       </div>
 
@@ -308,8 +419,14 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
         </div>
         <div className="bc-field">
           <label className="bc-label">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style={{opacity:0.6}}>
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              style={{ opacity: 0.6 }}
+            >
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
             </svg>
             WhatsApp
           </label>
@@ -319,15 +436,20 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
             name="whatsapp"
             value={form.whatsapp}
             onChange={handleChange}
-            placeholder="Ej: 1123456789"
+            placeholder="Ej: 3408612345"
           />
         </div>
 
         {error && (
           <div className="bc-error fade-in">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-              <circle cx="6.5" cy="6.5" r="6" stroke="currentColor"/>
-              <path d="M6.5 4V6.5M6.5 8.5V9" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+              <circle cx="6.5" cy="6.5" r="6" stroke="currentColor" />
+              <path
+                d="M6.5 4V6.5M6.5 8.5V9"
+                stroke="currentColor"
+                strokeWidth="1.1"
+                strokeLinecap="round"
+              />
             </svg>
             {error}
           </div>
@@ -335,18 +457,24 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
 
         <button
           type="submit"
-          className={`bc-submit ${loading ? 'bc-submit--loading' : ''}`}
+          className={`bc-submit ${loading ? "bc-submit--loading" : ""}`}
           disabled={loading}
         >
-          {loading
-            ? <span className="bc-spinner bc-spinner--white"/>
-            : <>
-                <span>Confirmar turno</span>
-                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                  <path d="M2.5 7.5H12.5M12.5 7.5L8.5 3.5M12.5 7.5L8.5 11.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
-                </svg>
-              </>
-          }
+          {loading ? (
+            <span className="bc-spinner bc-spinner--white" />
+          ) : (
+            <>
+              <span>Confirmar turno</span>
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <path
+                  d="M2.5 7.5H12.5M12.5 7.5L8.5 3.5M12.5 7.5L8.5 11.5"
+                  stroke="currentColor"
+                  strokeWidth="1.1"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </>
+          )}
         </button>
       </form>
     </div>
@@ -355,42 +483,44 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
 
 // ─── Confirmation ─────────────────────────────────────────────────────────────
 const Confirmation = ({ appointment, onReset }) => {
-  console.log('🎉 [Confirmation] appointment recibido:', appointment);
-  console.log('📅 [Confirmation] appointment_date:', appointment.appointment_date);
-  console.log('🕐 [Confirmation] appointment_hour:', appointment.appointment_hour);
-  
   // Parse date correctly - handle both string and Date object
   let d;
-  if (typeof appointment.appointment_date === 'string') {
-    // If it's a string like "2024-02-15" or ISO, extract just the date part
-    const dateOnly = appointment.appointment_date.split('T')[0];
-    d = new Date(dateOnly + 'T12:00:00');
-    console.log('📆 [Confirmation] dateOnly:', dateOnly, '-> parsed:', d);
+  if (typeof appointment.appointment_date === "string") {
+
+    const dateOnly = appointment.appointment_date.split("T")[0];
+    d = new Date(dateOnly + "T12:00:00");
   } else {
     d = new Date(appointment.appointment_date);
-    console.log('📆 [Confirmation] Date object parsed:', d);
   }
-  
+
   const h = appointment.appointment_hour;
-  console.log('🕐 [Confirmation] h (hour):', h);
-  console.log('📅 [Confirmation] d.getDay():', d.getDay());
-  console.log('📅 [Confirmation] d.getDate():', d.getDate());
-  console.log('📅 [Confirmation] d.getMonth():', d.getMonth());
-  console.log('📅 [Confirmation] d.getFullYear():', d.getFullYear());
-  
+
   const dayLabel = `${DAY_NAMES_FULL[d.getDay()]} ${d.getDate()} de ${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
-  console.log('✨ [Confirmation] dayLabel final:', dayLabel);
 
   return (
     <div className="bc-confirm fade-in">
       <div className="bc-confirm__icon">
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-          <circle cx="18" cy="18" r="17" stroke="currentColor" strokeWidth="1"/>
-          <path d="M11 18.5L16 23.5L25 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle
+            cx="18"
+            cy="18"
+            r="17"
+            stroke="currentColor"
+            strokeWidth="1"
+          />
+          <path
+            d="M11 18.5L16 23.5L25 13"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </div>
       <div className="bc-confirm__title">¡Turno confirmado!</div>
-      <div className="bc-confirm__subtitle">Te esperamos, {appointment.name}</div>
+      <div className="bc-confirm__subtitle">
+        Te esperamos, {appointment.name}
+      </div>
 
       <div className="bc-confirm__card">
         <div className="bc-confirm__row">
@@ -399,7 +529,10 @@ const Confirmation = ({ appointment, onReset }) => {
         </div>
         <div className="bc-confirm__row">
           <span>Horario</span>
-          <strong>{String(h).padStart(2,'0')}:00 – {String(h+1).padStart(2,'0')}:00</strong>
+          <strong>
+            {String(h).padStart(2, "0")}:00 – {String(h + 1).padStart(2, "0")}
+            :00
+          </strong>
         </div>
         <div className="bc-confirm__row">
           <span>WhatsApp</span>
@@ -420,7 +553,7 @@ const Confirmation = ({ appointment, onReset }) => {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const BookingCalendar = () => {
-  const [step, setStep] = useState(0);            // 0=calendar, 1=hours, 2=form, 3=confirm
+  const [step, setStep] = useState(0); // 0=calendar, 1=hours, 2=form, 3=confirm
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -431,17 +564,22 @@ const BookingCalendar = () => {
   const fetchAppointments = useCallback(() => {
     const from = toDateStr(weekStart);
     const to = toDateStr(addDays(weekStart, 5));
-    api.getAppointments(from, to).then(res => {
-      if (res.success) setAppointments(res.data);
-    }).catch(() => {});
+    api
+      .getAppointments(from, to)
+      .then((res) => {
+        if (res.success) setAppointments(res.data);
+      })
+      .catch(() => {});
   }, [weekStart]);
 
-  useEffect(() => { fetchAppointments(); }, [fetchAppointments]);
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
 
   // SSE for real-time updates
   useEffect(() => {
-    const es = new EventSource('/api/events');
-    es.addEventListener('calendar_update', fetchAppointments);
+    const es = new EventSource("/api/events");
+    es.addEventListener("calendar_update", fetchAppointments);
     es.onerror = () => es.close();
     return () => es.close();
   }, [fetchAppointments]);
@@ -471,7 +609,8 @@ const BookingCalendar = () => {
 
   const prevWeek = () => {
     const prev = addDays(weekStart, -7);
-    const today = new Date(); today.setHours(0,0,0,0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     if (getMonday(prev) >= getMonday(today)) setWeekStart(getMonday(prev));
   };
 
@@ -482,9 +621,21 @@ const BookingCalendar = () => {
       <div className="bc-header">
         <div className="bc-header__eyebrow">Reservá tu turno</div>
         <h3 className="bc-header__title">
-          {step === 0 && <>Elegí el <em>día</em></>}
-          {step === 1 && <>Elegí el <em>horario</em></>}
-          {step === 2 && <>Tus <em>datos</em></>}
+          {step === 0 && (
+            <>
+              Elegí el <em>día</em>
+            </>
+          )}
+          {step === 1 && (
+            <>
+              Elegí el <em>horario</em>
+            </>
+          )}
+          {step === 2 && (
+            <>
+              Tus <em>datos</em>
+            </>
+          )}
           {step === 3 && <>¡Listo!</>}
         </h3>
       </div>
