@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { api } from "../api";
 import "./BookingCalendar.css";
 
@@ -584,35 +584,30 @@ const BookingCalendar = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [confirmedAppt, setConfirmedAppt] = useState(null);
   const [appointments, setAppointments] = useState([]);
-
-  // Usar ref para mantener el weekStart actualizado sin recrear el SSE listener
-  const weekStartRef = useRef(weekStart);
-  
-  useEffect(() => {
-    weekStartRef.current = weekStart;
-  }, [weekStart]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Trigger para forzar recarga
 
   // Fetch appointments for visible range (for the dots on the calendar)
   const fetchAppointments = useCallback(() => {
-    const from = toDateStr(weekStartRef.current);
-    const to = toDateStr(addDays(weekStartRef.current, 5));
+    const from = toDateStr(weekStart);
+    const to = toDateStr(addDays(weekStart, 5));
+    console.log('🔄 Fetching appointments:', { from, to, weekStart });
     api
       .getAppointments(from, to)
       .then((res) => {
         if (res.success) {
-          console.log('📊 Appointments actualizados:', res.data.length, 'turnos');
+          console.log('📊 Appointments recibidos:', res.data.length, 'turnos', res.data);
           setAppointments(res.data);
         }
       })
       .catch((err) => {
         console.error('❌ Error al cargar appointments:', err);
       });
-  }, []); // Sin dependencias - usa el ref
+  }, [weekStart]);
 
-  // Cargar appointments inicialmente y cuando cambia la semana
+  // Cargar appointments inicialmente y cuando cambia la semana o refreshTrigger
   useEffect(() => {
     fetchAppointments();
-  }, [weekStart, fetchAppointments]);
+  }, [weekStart, refreshTrigger, fetchAppointments]);
 
   // SSE for real-time updates - SOLO SE MONTA UNA VEZ
   useEffect(() => {
@@ -620,8 +615,9 @@ const BookingCalendar = () => {
     const es = new EventSource("/api/events");
     
     const handleCalendarUpdate = (event) => {
-      console.log('🔄 Evento calendar_update recibido:', event);
-      fetchAppointments(); // Recarga los appointments cuando hay cambios
+      console.log('🔔 Evento calendar_update recibido!', event);
+      // Forzar recarga incrementando el trigger
+      setRefreshTrigger(prev => prev + 1);
     };
     
     es.addEventListener("calendar_update", handleCalendarUpdate);
@@ -634,7 +630,7 @@ const BookingCalendar = () => {
       console.log('🔌 Cerrando conexión SSE');
       es.close();
     };
-  }, [fetchAppointments]); // Solo depende de fetchAppointments que nunca cambia
+  }, []); // Sin dependencias - se monta solo una vez
 
   const handleSelectDate = (dateStr) => {
     setSelectedDate(dateStr);
