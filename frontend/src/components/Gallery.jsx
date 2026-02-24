@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { api } from '../api';
-import './Gallery.css';
+import React, { useState, useEffect } from "react";
+import { api } from "../api";
+import "./Gallery.css";
 
 const Gallery = () => {
   const [items, setItems] = useState([]);
@@ -12,16 +12,16 @@ const Gallery = () => {
       try {
         const res = await api.getGallery();
         if (res.success && res.data.length > 0) {
-          const mapped = res.data.map(item => ({
+          const mapped = res.data.map((item) => ({
             id: item.id,
             url: item.image_url,
-            title: item.title || 'Sin título',
-            tag: item.category?.toUpperCase() || 'GENERAL',
+            title: item.title || "Sin título",
+            tag: item.category?.toUpperCase() || "GENERAL",
           }));
           setItems(mapped);
         }
       } catch (err) {
-        console.error('Error loading gallery:', err);
+        console.error("Error loading gallery:", err);
       } finally {
         setLoading(false);
       }
@@ -30,12 +30,12 @@ const Gallery = () => {
     fetchGallery();
 
     // SSE para actualizaciones en tiempo real
-    const es = new EventSource('/api/events');
-    es.addEventListener('gallery_update', () => {
+    const es = new EventSource("/api/events");
+    es.addEventListener("gallery_update", () => {
       fetchGallery();
     });
     es.onerror = () => es.close();
-    
+
     return () => es.close();
   }, []);
 
@@ -55,9 +55,27 @@ const Gallery = () => {
       <div className="gallery">
         <div className="gallery__empty">
           <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-            <rect x="8" y="8" width="48" height="36" stroke="currentColor" strokeWidth="2" rx="4"/>
-            <circle cx="20" cy="20" r="4" stroke="currentColor" strokeWidth="2"/>
-            <path d="M8 36L20 24L32 36L44 24L56 36" stroke="currentColor" strokeWidth="2"/>
+            <rect
+              x="8"
+              y="8"
+              width="48"
+              height="36"
+              stroke="currentColor"
+              strokeWidth="2"
+              rx="4"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="4"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+            <path
+              d="M8 36L20 24L32 36L44 24L56 36"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
           </svg>
           <h3>No hay imágenes en la galería</h3>
           <p>Las imágenes agregadas aparecerán aquí</p>
@@ -96,17 +114,28 @@ const Gallery = () => {
 
       {/* Lightbox */}
       {active && (
-        <div className="gallery__lightbox fade-in" onClick={() => setActive(null)}>
+        <div
+          className="gallery__lightbox fade-in"
+          onClick={() => setActive(null)}
+        >
           <button className="gallery__close">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M4 4L16 16M16 4L4 16" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+              <path
+                d="M4 4L16 16M16 4L4 16"
+                stroke="currentColor"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+              />
             </svg>
           </button>
-          <div className="gallery__lightbox-content" onClick={e => e.stopPropagation()}>
+          <div
+            className="gallery__lightbox-content"
+            onClick={(e) => e.stopPropagation()}
+          >
             <img src={active.url} alt={active.title} />
             <div className="gallery__lightbox-info">
               <span className="gallery__tag">{active.tag}</span>
-              <span className="gallery__title">{active.title}</span>
+              <h2 className="gallery__title">{active.title}</h2>
             </div>
           </div>
         </div>
