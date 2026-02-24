@@ -5,7 +5,6 @@ dotenv.config();
 
 const { Pool } = pg;
 
-// Soporta DATABASE_URL (Neon/Render) o variables separadas (local)
 export const pool = new Pool(
   process.env.DATABASE_URL
     ? {
@@ -22,18 +21,12 @@ export const pool = new Pool(
 );
 
 pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
-});
-
-pool.on('connect', () => {
-  console.log('✅ Database connected');
+  console.error('Error inesperado en cliente idle:', err);
 });
 
 export const initDB = async () => {
   const client = await pool.connect();
   try {
-    console.log('🔄 Inicializando base de datos...');
-
     await client.query(`
       CREATE TABLE IF NOT EXISTS appointments (
         id SERIAL PRIMARY KEY,
@@ -57,10 +50,8 @@ export const initDB = async () => {
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
-
-    console.log('✅ Database initialized successfully');
   } catch (err) {
-    console.error('❌ DB init error:', err.message);
+    console.error('Error inicializando base de datos:', err.message);
     throw err;
   } finally {
     client.release();

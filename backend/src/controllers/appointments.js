@@ -35,80 +35,53 @@ export const getAllAppointments = async (req, res) => {
 // Get available slots for a specific date
 export const getAvailableSlots = async (req, res) => {
   const { date } = req.params;
-  console.log('📅 [getAvailableSlots] Request recibido para fecha:', date);
-  
-  // Validate date format
+
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    console.error('❌ [getAvailableSlots] Formato de fecha inválido:', date);
     return res.status(400).json({ success: false, error: 'Formato de fecha inválido' });
   }
 
   try {
     const d = new Date(date + 'T12:00:00');
-    console.log('📆 [getAvailableSlots] Fecha parseada:', d);
-    
-    // Check if date is valid
+
     if (isNaN(d.getTime())) {
-      console.error('❌ [getAvailableSlots] Fecha inválida después de parsear:', date);
       return res.status(400).json({ success: false, error: 'Fecha inválida' });
     }
 
     const dayOfWeek = d.getDay();
-    console.log('📍 [getAvailableSlots] Día de la semana:', dayOfWeek);
-    
+
     if (dayOfWeek === 0) {
-      console.log('🚫 [getAvailableSlots] Domingo - local cerrado');
       return res.json({ success: true, data: [], closed: true });
     }
 
-    console.log('🔍 [getAvailableSlots] Consultando DB...');
     const takenResult = await pool.query(
       `SELECT appointment_hour FROM appointments WHERE appointment_date = $1 AND status = 'confirmed'`,
       [date]
     );
-    console.log('✅ [getAvailableSlots] Query exitosa. Turnos ocupados:', takenResult.rows.length);
-    
+
     const takenHours = takenResult.rows.map(r => r.appointment_hour);
-    console.log('⏰ [getAvailableSlots] Horas ocupadas:', takenHours);
-    
-    // Get current date and hour in Argentina timezone (UTC-3)
+
     const now = new Date();
     const argentinaTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
     const today = new Date(argentinaTime.getFullYear(), argentinaTime.getMonth(), argentinaTime.getDate());
     const requestDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
     const isToday = requestDate.getTime() === today.getTime();
     const currentHour = argentinaTime.getHours();
-    
-    console.log('🕐 [getAvailableSlots] Hora actual (Argentina):', currentHour, '- Es hoy:', isToday);
-    
+
     const allHours = Array.from({ length: 12 }, (_, i) => i + 8);
     const slots = allHours
-      .filter(hour => {
-        // Si es hoy, excluir horas que ya pasaron o la hora actual
-        if (isToday && hour <= currentHour) {
-          return false;
-        }
-        return true;
-      })
+      .filter(hour => !(isToday && hour <= currentHour))
       .map(hour => ({
         hour,
         label: `${hour.toString().padStart(2, '0')}:00`,
         available: !takenHours.includes(hour),
       }));
 
-    console.log('✨ [getAvailableSlots] Slots generados:', slots.length);
     res.json({ success: true, data: slots });
   } catch (err) {
-    console.error('💥 [getAvailableSlots] ERROR:', {
-      message: err.message,
-      stack: err.stack,
-      code: err.code,
-      detail: err.detail
-    });
+    console.error('Error obteniendo slots:', err.message);
     res.status(500).json({ 
       success: false, 
-      error: err.message || 'Error al obtener horarios disponibles',
-      detail: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      error: err.message || 'Error al obtener horarios disponibles'
     });
   }
 };
@@ -137,41 +110,19 @@ export const createAppointment = async (req, res) => {
        VALUES ($1, $2, $3, $4, 'confirmed') RETURNING *`,
       [name, whatsapp, appointment_date, hour]
     );
-    
-    const appointment = result.rows[0];
-    
-    console.log('📡 [broadcast] Emitiendo evento calendar_update a', sseClients.size, 'clientes conectados');
-    broadcast('calendar_update', { type: 'new', appointment });
-    console.log('✅ [broadcast] Evento calendar_update emitido exitosamente');
 
-    // Enviar WhatsApp con Twilio (en segundo plano)
+    const appointment = result.rows[0];
+
+    broadcast('calendar_update', { type: 'new', appointment });
+
+    // Enviar WhatsApp en segundo plano
     setImmediate(async () => {
       try {
-        // Confirmación al cliente
-        const clientResult = await sendClientConfirmation(appointment);
-        if (clientResult.success) {
-          console.log('✅ WhatsApp enviado al cliente:', appointment.name);
-        } else {
-          console.log('⚠️  Error enviando WhatsApp al cliente:', clientResult.error);
-        }
-
-        // Notificación al admin
-        const adminResult = await sendAdminNotification(appointment);
-        if (adminResult.success) {
-          console.log('✅ Admin notificado del nuevo turno');
-        } else {
-          console.log('⚠️  Error notificando admin:', adminResult.error);
-        }
+        await sendClientConfirmation(appointment);
+        await sendAdminNotification(appointment);
       } catch (whatsappError) {
-        console.error('❌ Error con WhatsApp:', whatsappError);
+        console.error('Error con WhatsApp:', whatsappError);
       }
-    });
-
-    console.log('📝 Turno creado:', {
-      id: appointment.id,
-      cliente: appointment.name,
-      fecha: appointment.appointment_date,
-      hora: appointment.appointment_hour
     });
 
     res.status(201).json({ success: true, data: appointment });
