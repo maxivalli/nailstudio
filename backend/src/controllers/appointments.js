@@ -140,7 +140,9 @@ export const createAppointment = async (req, res) => {
     
     const appointment = result.rows[0];
     
+    console.log('📡 [broadcast] Emitiendo evento calendar_update a', sseClients.size, 'clientes conectados');
     broadcast('calendar_update', { type: 'new', appointment });
+    console.log('✅ [broadcast] Evento calendar_update emitido exitosamente');
 
     // Enviar WhatsApp con Twilio (en segundo plano)
     setImmediate(async () => {

@@ -590,44 +590,85 @@ const BookingCalendar = () => {
   const fetchAppointments = useCallback(() => {
     const from = toDateStr(weekStart);
     const to = toDateStr(addDays(weekStart, 5));
-    console.log('🔄 Fetching appointments:', { from, to, weekStart });
+    console.log('🔄 [fetchAppointments] Llamado con:', { 
+      from, 
+      to, 
+      weekStartDate: weekStart.toISOString(),
+      refreshTrigger 
+    });
     api
       .getAppointments(from, to)
       .then((res) => {
         if (res.success) {
-          console.log('📊 Appointments recibidos:', res.data.length, 'turnos', res.data);
+          console.log('📊 [fetchAppointments] Appointments recibidos:', {
+            count: res.data.length,
+            data: res.data,
+            timestamp: new Date().toISOString()
+          });
           setAppointments(res.data);
+        } else {
+          console.error('❌ [fetchAppointments] Respuesta sin éxito:', res);
         }
       })
       .catch((err) => {
-        console.error('❌ Error al cargar appointments:', err);
+        console.error('❌ [fetchAppointments] Error:', err);
       });
-  }, [weekStart]);
+  }, [weekStart, refreshTrigger]);
 
   // Cargar appointments inicialmente y cuando cambia la semana o refreshTrigger
   useEffect(() => {
+    console.log('🔁 [useEffect] Ejecutando fetchAppointments por cambio en:', {
+      weekStart: weekStart.toISOString(),
+      refreshTrigger
+    });
     fetchAppointments();
   }, [weekStart, refreshTrigger, fetchAppointments]);
 
   // SSE for real-time updates - SOLO SE MONTA UNA VEZ
   useEffect(() => {
-    console.log('🔌 Conectando SSE para actualizaciones en tiempo real...');
+    console.log('🔌 [SSE] Conectando SSE para actualizaciones en tiempo real...');
     const es = new EventSource("/api/events");
     
+    es.onopen = () => {
+      console.log('✅ [SSE] Conexión SSE establecida exitosamente');
+    };
+    
     const handleCalendarUpdate = (event) => {
-      console.log('🔔 Evento calendar_update recibido!', event);
+      console.log('🔔 [SSE] Evento calendar_update recibido!', {
+        event,
+        data: event.data,
+        timestamp: new Date().toISOString(),
+        currentRefreshTrigger: refreshTrigger
+      });
+      
+      // Parsear el data del evento
+      try {
+        const eventData = JSON.parse(event.data);
+        console.log('📦 [SSE] Datos del evento parseados:', eventData);
+      } catch (e) {
+        console.log('⚠️ [SSE] No se pudo parsear event.data:', e);
+      }
+      
       // Forzar recarga incrementando el trigger
-      setRefreshTrigger(prev => prev + 1);
+      setRefreshTrigger(prev => {
+        console.log('🔥 [SSE] Incrementando refreshTrigger:', prev, '→', prev + 1);
+        return prev + 1;
+      });
     };
     
     es.addEventListener("calendar_update", handleCalendarUpdate);
+    
     es.onerror = (err) => {
-      console.error('❌ Error en SSE:', err);
+      console.error('❌ [SSE] Error en SSE:', {
+        error: err,
+        readyState: es.readyState,
+        timestamp: new Date().toISOString()
+      });
       es.close();
     };
     
     return () => {
-      console.log('🔌 Cerrando conexión SSE');
+      console.log('🔌 [SSE] Cerrando conexión SSE');
       es.close();
     };
   }, []); // Sin dependencias - se monta solo una vez
