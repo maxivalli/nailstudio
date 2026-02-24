@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { api } from "../api";
 import "./BookingCalendar.css";
 
@@ -585,29 +585,56 @@ const BookingCalendar = () => {
   const [confirmedAppt, setConfirmedAppt] = useState(null);
   const [appointments, setAppointments] = useState([]);
 
+  // Usar ref para mantener el weekStart actualizado sin recrear el SSE listener
+  const weekStartRef = useRef(weekStart);
+  
+  useEffect(() => {
+    weekStartRef.current = weekStart;
+  }, [weekStart]);
+
   // Fetch appointments for visible range (for the dots on the calendar)
   const fetchAppointments = useCallback(() => {
-    const from = toDateStr(weekStart);
-    const to = toDateStr(addDays(weekStart, 5));
+    const from = toDateStr(weekStartRef.current);
+    const to = toDateStr(addDays(weekStartRef.current, 5));
     api
       .getAppointments(from, to)
       .then((res) => {
-        if (res.success) setAppointments(res.data);
+        if (res.success) {
+          console.log('📊 Appointments actualizados:', res.data.length, 'turnos');
+          setAppointments(res.data);
+        }
       })
-      .catch(() => {});
-  }, [weekStart]);
+      .catch((err) => {
+        console.error('❌ Error al cargar appointments:', err);
+      });
+  }, []); // Sin dependencias - usa el ref
 
+  // Cargar appointments inicialmente y cuando cambia la semana
   useEffect(() => {
     fetchAppointments();
-  }, [fetchAppointments]);
+  }, [weekStart, fetchAppointments]);
 
-  // SSE for real-time updates
+  // SSE for real-time updates - SOLO SE MONTA UNA VEZ
   useEffect(() => {
+    console.log('🔌 Conectando SSE para actualizaciones en tiempo real...');
     const es = new EventSource("/api/events");
-    es.addEventListener("calendar_update", fetchAppointments);
-    es.onerror = () => es.close();
-    return () => es.close();
-  }, [fetchAppointments]);
+    
+    const handleCalendarUpdate = (event) => {
+      console.log('🔄 Evento calendar_update recibido:', event);
+      fetchAppointments(); // Recarga los appointments cuando hay cambios
+    };
+    
+    es.addEventListener("calendar_update", handleCalendarUpdate);
+    es.onerror = (err) => {
+      console.error('❌ Error en SSE:', err);
+      es.close();
+    };
+    
+    return () => {
+      console.log('🔌 Cerrando conexión SSE');
+      es.close();
+    };
+  }, [fetchAppointments]); // Solo depende de fetchAppointments que nunca cambia
 
   const handleSelectDate = (dateStr) => {
     setSelectedDate(dateStr);
