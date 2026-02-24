@@ -1,5 +1,5 @@
 import { pool } from '../db/index.js';
-import { broadcast } from '../index.js';
+import { broadcast, sseClients } from '../index.js';
 import { sendClientConfirmation, sendAdminNotification } from '../services/whatsapp.js';
 
 // Get confirmed appointments for a date range (calendar view)
