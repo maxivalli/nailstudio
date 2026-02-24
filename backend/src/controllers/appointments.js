@@ -226,7 +226,12 @@ export const getStats = async (req, res) => {
         COUNT(*) FILTER (WHERE status='completed') AS total_completed
       FROM appointments
     `);
-    res.json({ success: true, data: result.rows[0] });
+    const row = result.rows[0];
+    res.json({ success: true, data: {
+      today_confirmed: parseInt(row.today_confirmed),
+      upcoming: parseInt(row.upcoming),
+      total_completed: parseInt(row.total_completed),
+    }});
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

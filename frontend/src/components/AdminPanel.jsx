@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { api } from '../api';
+import { api, getSSEUrl } from '../api';
 import './AdminPanel.css';
 
 const HOURS = Array.from({ length: 12 }, (_, i) => i + 8);
@@ -49,20 +49,34 @@ const AdminPanel = ({ onClose }) => {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  // SSE
+  // SSE con reconexión automática
   useEffect(() => {
-    const es = new EventSource('/api/events');
-    es.addEventListener('calendar_update', fetchAll);
-    es.onerror = () => es.close();
-    return () => es.close();
+    let es;
+    let retryTimeout;
+
+    const connect = () => {
+      es = new EventSource(getSSEUrl());
+      es.addEventListener('calendar_update', fetchAll);
+      es.onerror = () => {
+        es.close();
+        retryTimeout = setTimeout(connect, 5000);
+      };
+    };
+
+    connect();
+    return () => {
+      es?.close();
+      clearTimeout(retryTimeout);
+    };
   }, [fetchAll]);
 
   const handleStatus = async (id, status) => {
     setUpdating(id);
-    await api.updateStatus(id, status);
+    const res = await api.updateStatus(id, status);
     await fetchAll();
     setUpdating(null);
-    setSelectedAppt(null);
+    if (res.success) setSelectedAppt(res.data);
+    else setSelectedAppt(null);
   };
 
   const handleDelete = async (id) => {
