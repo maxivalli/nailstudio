@@ -53,9 +53,10 @@ const addDays = (d, n) => {
 const isSunday = (d) => d.getDay() === 0;
 const isPast = (d, hour) => {
   const now = new Date();
+  const argentinaTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
   const slot = new Date(d);
   slot.setHours(hour, 0, 0, 0);
-  return slot <= now;
+  return slot <= argentinaTime;
 };
 
 // ─── Step indicator ─────────────────────────────────────────────────────────
@@ -101,7 +102,9 @@ const WeekCalendar = ({
   onPrevWeek,
   onNextWeek,
 }) => {
-  const today = new Date();
+  const now = new Date();
+  const argentinaTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+  const today = new Date(argentinaTime.getFullYear(), argentinaTime.getMonth(), argentinaTime.getDate());
   today.setHours(0, 0, 0, 0);
   // Get Mon-Sat (6 days)
   const days = Array.from({ length: 6 }, (_, i) => addDays(weekStart, i));
@@ -609,7 +612,9 @@ const BookingCalendar = () => {
 
   const prevWeek = () => {
     const prev = addDays(weekStart, -7);
-    const today = new Date();
+    const now = new Date();
+    const argentinaTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+    const today = new Date(argentinaTime.getFullYear(), argentinaTime.getMonth(), argentinaTime.getDate());
     today.setHours(0, 0, 0, 0);
     if (getMonday(prev) >= getMonday(today)) setWeekStart(getMonday(prev));
   };

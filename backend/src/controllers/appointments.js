@@ -71,14 +71,15 @@ export const getAvailableSlots = async (req, res) => {
     const takenHours = takenResult.rows.map(r => r.appointment_hour);
     console.log('⏰ [getAvailableSlots] Horas ocupadas:', takenHours);
     
-    // Get current date and hour in local timezone
+    // Get current date and hour in Argentina timezone (UTC-3)
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const argentinaTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+    const today = new Date(argentinaTime.getFullYear(), argentinaTime.getMonth(), argentinaTime.getDate());
     const requestDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
     const isToday = requestDate.getTime() === today.getTime();
-    const currentHour = now.getHours();
+    const currentHour = argentinaTime.getHours();
     
-    console.log('🕐 [getAvailableSlots] Hora actual:', currentHour, '- Es hoy:', isToday);
+    console.log('🕐 [getAvailableSlots] Hora actual (Argentina):', currentHour, '- Es hoy:', isToday);
     
     const allHours = Array.from({ length: 12 }, (_, i) => i + 8);
     const slots = allHours
