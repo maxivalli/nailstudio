@@ -230,7 +230,8 @@ const HourPicker = ({ date, onSelectSlot, onBack }) => {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  // Función para cargar/recargar slots
+  const loadSlots = useCallback(() => {
     setLoading(true);
     api
       .getSlots(date)
@@ -255,6 +256,27 @@ const HourPicker = ({ date, onSelectSlot, onBack }) => {
         setLoading(false);
       });
   }, [date]);
+
+  // Cargar slots inicialmente
+  useEffect(() => {
+    loadSlots();
+  }, [loadSlots]);
+
+  // Escuchar eventos SSE para actualización en tiempo real
+  useEffect(() => {
+    const es = new EventSource("/api/events");
+    
+    const handleUpdate = (event) => {
+      console.log("🔄 Evento recibido en HourPicker:", event);
+      // Recargar slots cuando hay un cambio en el calendario
+      loadSlots();
+    };
+    
+    es.addEventListener("calendar_update", handleUpdate);
+    es.onerror = () => es.close();
+    
+    return () => es.close();
+  }, [loadSlots]);
 
   const d = new Date(date + "T12:00:00");
   const dayLabel = `${DAY_NAMES_FULL[d.getDay()]} ${d.getDate()} de ${MONTH_NAMES[d.getMonth()]}`;
