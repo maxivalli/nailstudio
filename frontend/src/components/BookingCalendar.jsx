@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { api } from "../api";
+import { api, getSSEUrl } from "../api";
 import "./BookingCalendar.css";
 
 const HOURS = Array.from({ length: 12 }, (_, i) => i + 8); // 8..19
@@ -264,16 +264,21 @@ const HourPicker = ({ date, onSelectSlot, onBack }) => {
 
   // Escuchar eventos SSE para actualización en tiempo real
   useEffect(() => {
-    const es = new EventSource("/api/events");
+    const sseUrl = getSSEUrl();
+    console.log("🔌 [HourPicker] Conectando SSE a:", sseUrl);
+    const es = new EventSource(sseUrl);
     
     const handleUpdate = (event) => {
-      console.log("🔄 Evento recibido en HourPicker:", event);
+      console.log("🔄 [HourPicker] Evento recibido:", event);
       // Recargar slots cuando hay un cambio en el calendario
       loadSlots();
     };
     
     es.addEventListener("calendar_update", handleUpdate);
-    es.onerror = () => es.close();
+    es.onerror = (err) => {
+      console.error("❌ [HourPicker] Error en SSE:", err);
+      es.close();
+    };
     
     return () => es.close();
   }, [loadSlots]);
@@ -626,8 +631,9 @@ const BookingCalendar = () => {
 
   // SSE for real-time updates - SOLO SE MONTA UNA VEZ
   useEffect(() => {
-    console.log('🔌 [SSE] Conectando SSE para actualizaciones en tiempo real...');
-    const es = new EventSource("/api/events");
+    const sseUrl = getSSEUrl();
+    console.log('🔌 [SSE] Conectando SSE a:', sseUrl);
+    const es = new EventSource(sseUrl);
     
     es.onopen = () => {
       console.log('✅ [SSE] Conexión SSE establecida exitosamente');
@@ -662,7 +668,8 @@ const BookingCalendar = () => {
       console.error('❌ [SSE] Error en SSE:', {
         error: err,
         readyState: es.readyState,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        url: sseUrl
       });
       es.close();
     };

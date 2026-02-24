@@ -4,6 +4,13 @@ const BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
   : '/api';
 
+// Helper para obtener la URL completa del SSE (sin el /api)
+export const getSSEUrl = () => {
+  return import.meta.env.VITE_API_URL
+    ? `${import.meta.env.VITE_API_URL}/api/events`
+    : '/api/events';
+};
+
 // Helper para obtener token
 const getToken = () => localStorage.getItem('admin_token');
 
