@@ -4,23 +4,19 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // ─── Configuración Evolution API ────────────────────────────────────────────
-const EVOLUTION_API_URL     = process.env.EVOLUTION_API_URL;      
-const EVOLUTION_API_KEY     = process.env.EVOLUTION_API_KEY;      
-const EVOLUTION_INSTANCE    = process.env.EVOLUTION_INSTANCE;     
-const adminWhatsAppNumber   = process.env.ADMIN_WHATSAPP_NUMBER;  
+const EVOLUTION_API_URL   = process.env.EVOLUTION_API_URL;
+const EVOLUTION_API_KEY   = process.env.EVOLUTION_API_KEY;
+const EVOLUTION_INSTANCE  = process.env.EVOLUTION_INSTANCE;
+const adminWhatsAppNumber = process.env.ADMIN_WHATSAPP_NUMBER;
 
 let isReady = false;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/**
- * Normaliza un número al formato que Evolution API espera: solo dígitos con código de país.
- * Ejemplo: "1123456789" → "5491123456789"
- */
 const formatPhoneNumber = (phone) => {
   let cleaned = phone.replace(/\D/g, '');
   if (!cleaned.startsWith('549')) cleaned = '549' + cleaned;
-  return cleaned; // Evolution API recibe solo el número, sin "whatsapp:+" ni "+"
+  return cleaned;
 };
 
 const formatDate = (dateStr) => {
@@ -38,10 +34,8 @@ const formatDate = (dateStr) => {
   return `${days[date.getDay()]} ${date.getDate()} de ${months[date.getMonth()]}`;
 };
 
-/**
- * Envía un mensaje de texto vía Evolution API.
- * Docs: POST /message/sendText/{instance}
- */
+// ─── Envío de mensajes (formato v1) ──────────────────────────────────────────
+
 const sendTextMessage = async (to, text) => {
   const url = `${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`;
 
@@ -49,10 +43,9 @@ const sendTextMessage = async (to, text) => {
     url,
     {
       number: to,
-      text,
-      // Opcionales:
-      // delay: 1200,          // retraso en ms antes de enviar (simula typing)
-      // linkPreview: false,
+      textMessage: {
+        text: text
+      }
     },
     {
       headers: {
@@ -67,10 +60,6 @@ const sendTextMessage = async (to, text) => {
 
 // ─── Inicialización ───────────────────────────────────────────────────────────
 
-/**
- * Verifica que las variables de entorno están presentes y que la instancia
- * de Evolution API está conectada antes de habilitar el envío de mensajes.
- */
 export const initWhatsApp = async () => {
   if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE) {
     console.log('WhatsApp (Evolution API) no configurado — se omiten notificaciones.');
@@ -78,7 +67,6 @@ export const initWhatsApp = async () => {
   }
 
   try {
-    // Consulta el estado de la instancia
     const { data } = await axios.get(
       `${EVOLUTION_API_URL}/instance/connectionState/${EVOLUTION_INSTANCE}`,
       { headers: { apikey: EVOLUTION_API_KEY } }
