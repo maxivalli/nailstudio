@@ -103,11 +103,11 @@
   }
 
   .navbar__link {
-    display: none;
+    display: block;
   }
 
-  .navbar__link:last-of-type {
-    display: block;
+  .navbar__link--trabajos {
+    display: none;
   }
 }
 
