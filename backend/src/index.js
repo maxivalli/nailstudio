@@ -63,7 +63,7 @@ app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 
 const start = async () => {
   await initDB();
-  initWhatsApp();
+  await initWhatsApp();
 
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
