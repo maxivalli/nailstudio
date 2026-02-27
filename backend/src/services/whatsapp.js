@@ -4,10 +4,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // ─── Configuración Evolution API ────────────────────────────────────────────
-const EVOLUTION_API_URL     = process.env.EVOLUTION_API_URL;      // ej: http://localhost:8080
-const EVOLUTION_API_KEY     = process.env.EVOLUTION_API_KEY;      // API Key global o de instancia
-const EVOLUTION_INSTANCE    = process.env.EVOLUTION_INSTANCE;     // nombre de tu instancia
-const adminWhatsAppNumber   = process.env.ADMIN_WHATSAPP_NUMBER;  // ej: 5491112345678
+const EVOLUTION_API_URL     = process.env.EVOLUTION_API_URL;      
+const EVOLUTION_API_KEY     = process.env.EVOLUTION_API_KEY;      
+const EVOLUTION_INSTANCE    = process.env.EVOLUTION_INSTANCE;     
+const adminWhatsAppNumber   = process.env.ADMIN_WHATSAPP_NUMBER;  
 
 let isReady = false;
 
