@@ -5,7 +5,7 @@ import { initDB } from './db/index.js';
 import appointmentsRouter from './routes/appointments.js';
 import galleryRouter from './routes/gallery.js';
 import authRouter from './routes/auth.js';
-import { initWhatsApp } from './services/whatsapp.js';
+import { initWhatsApp, getWhatsAppInfo } from './services/whatsapp.js';
 
 dotenv.config();
 
@@ -61,9 +61,15 @@ app.use('/api/gallery', galleryRouter);
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 
+// WhatsApp status endpoint
+app.get('/api/whatsapp/status', async (_, res) => {
+  const info = await getWhatsAppInfo();
+  res.json(info || { ready: false, provider: 'Evolution API' });
+});
+
 const start = async () => {
   await initDB();
-  await initWhatsApp();
+  initWhatsApp();
 
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
