@@ -24,34 +24,12 @@ const Landing = () => {
       <div
         className={`landing__content ${visible ? "landing__content--visible" : ""}`}
       >
-        {/* Logo mark */}
-        <div className="landing__mark">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-            <circle
-              cx="24"
-              cy="24"
-              r="23"
-              stroke="currentColor"
-              strokeWidth="0.8"
-            />
-            <path
-              d="M24 8 C24 8, 34 18, 34 26 C34 31.5 29.5 36 24 36 C18.5 36 14 31.5 14 26 C14 18 24 8 24 8Z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="0.8"
-            />
-            <circle cx="24" cy="26" r="3" fill="currentColor" opacity="0.4" />
-          </svg>
-        </div>
 
         <div className="landing__eyebrow">Bienvenida a</div>
-
-        <h1 className="landing__title">
-          <span className="landing__title-line">SY</span>
-          <span className="landing__title-line landing__title-line--italic">
-            Studio
-          </span>
-        </h1>
+        {/* Logo */}
+        <div className="landing__mark">
+          <img src="/studiolanding.png" alt="SY Studio" className="landing__logo-img" />
+        </div>
 
         <p className="landing__tagline">
           Arte y cuidado para tus manos.
