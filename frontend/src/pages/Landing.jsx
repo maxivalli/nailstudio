@@ -13,13 +13,7 @@ const Landing = () => {
 
   return (
     <div className="landing">
-      {/* Decorative elements */}
-      <div className="landing__grain" />
-      <div className="landing__circle landing__circle--1" />
-      <div className="landing__circle landing__circle--2" />
-      <div className="landing__line landing__line--v1" />
-      <div className="landing__line landing__line--v2" />
-      <div className="landing__line landing__line--h" />
+      {/* Decorative elements removed */}
 
       <div
         className={`landing__content ${visible ? "landing__content--visible" : ""}`}
@@ -65,7 +59,7 @@ const Landing = () => {
           </div>
           <div className="landing__stat-divider" />
           <div className="landing__stat">
-            <span className="landing__stat-number">✫✫✫✫✫</span>
+            <span className="landing__stat-number">★★★★★</span>
             <span className="landing__stat-label">Valoración</span>
           </div>
           <div className="landing__stat-divider" />
