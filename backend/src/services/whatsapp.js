@@ -100,7 +100,7 @@ export const sendClientConfirmation = async (appointment) => {
 
 Tu turno ha sido confirmado:
 📅 Día: ${formatDate(appointment.appointment_date)}
-🕐 Hora: ${appointment.appointment_hour}:00 hs
+🕐 Hora: ${appointment.appointment_hour}:00 – ${appointment.appointment_hour + 2}:00 hs (2 horas)
 
 Te esperamos! 💅
 
@@ -127,7 +127,7 @@ export const sendAdminNotification = async (appointment) => {
 👤 Cliente: ${appointment.name}
 📱 WhatsApp: ${appointment.whatsapp}
 📅 Fecha: ${formatDate(appointment.appointment_date)}
-🕐 Hora: ${appointment.appointment_hour}:00 hs
+🕐 Hora: ${appointment.appointment_hour}:00 – ${appointment.appointment_hour + 2}:00 hs (2 horas)
 
 ID: #${appointment.id}
   `.trim();
@@ -151,7 +151,7 @@ Hola ${appointment.name}!
 
 Te recordamos tu turno de mañana:
 📅 ${formatDate(appointment.appointment_date)}
-🕐 ${appointment.appointment_hour}:00 hs
+🕐 ${appointment.appointment_hour}:00 – ${appointment.appointment_hour + 2}:00 hs (2 horas)
 
 Nos vemos! ✨
   `.trim();

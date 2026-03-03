@@ -67,7 +67,7 @@ export const getAvailableSlots = async (req, res) => {
     const isToday = requestDate.getTime() === today.getTime();
     const currentHour = argentinaTime.getHours();
 
-    const allHours = Array.from({ length: 12 }, (_, i) => i + 8);
+    const allHours = [8, 10, 12, 14, 16, 18]; // Turnos de 2 horas: 8-10, 10-12, 12-14, 14-16, 16-18, 18-20
     const slots = allHours
       .filter(hour => !(isToday && hour <= currentHour))
       .map(hour => ({
@@ -100,8 +100,9 @@ export const createAppointment = async (req, res) => {
   }
 
   const hour = parseInt(appointment_hour);
-  if (hour < 8 || hour >= 20) {
-    return res.status(400).json({ success: false, error: 'Horario fuera de rango (8:00 - 19:00)' });
+  const validHours = [8, 10, 12, 14, 16, 18];
+  if (!validHours.includes(hour)) {
+    return res.status(400).json({ success: false, error: 'Horario inválido. Los turnos son de 2 horas: 8:00, 10:00, 12:00, 14:00, 16:00 o 18:00' });
   }
 
   try {

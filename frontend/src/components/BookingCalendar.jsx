@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { api, getSSEUrl } from "../api";
 import "./BookingCalendar.css";
 
-const HOURS = Array.from({ length: 12 }, (_, i) => i + 8); // 8..19
+const HOURS = [8, 10, 12, 14, 16, 18]; // Turnos de 2 horas
 const DAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 const DAY_NAMES_FULL = [
   "Domingo",
@@ -163,7 +163,7 @@ const WeekCalendar = ({
           const isPastDay = day < today;
           const isSelected = selectedDate === dateStr;
           const occupied = occupiedMap[dateStr] || [];
-          const totalSlots = 12;
+          const totalSlots = 6; // 6 turnos de 2 horas (8-10, 10-12, 12-14, 14-16, 16-18, 18-20)
           const freeSlots = totalSlots - occupied.length;
           const allFull = freeSlots === 0;
 
@@ -316,7 +316,7 @@ const HourPicker = ({ date, onSelectSlot, onBack }) => {
             >
               <span className="bc-slot__time">{slot.label}</span>
               <span className="bc-slot__end">
-                – {(slot.hour + 1).toString().padStart(2, "0")}:00
+                – {(slot.hour + 2).toString().padStart(2, "0")}:00
               </span>
               {!slot.available && (
                 <span className="bc-slot__badge">Ocupado</span>
@@ -425,8 +425,8 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
             />
           </svg>
           <span>
-            {slot.label} – {(slot.hour + 1).toString().padStart(2, "0")}:00 (1
-            hora)
+            {slot.label} – {(slot.hour + 2).toString().padStart(2, "0")}:00 (2
+            horas)
           </span>
         </div>
       </div>
@@ -557,7 +557,7 @@ const Confirmation = ({ appointment, onReset }) => {
         <div className="bc-confirm__row">
           <span>Horario</span>
           <strong>
-            {String(h).padStart(2, "0")}:00 – {String(h + 1).padStart(2, "0")}
+            {String(h).padStart(2, "0")}:00 – {String(h + 2).padStart(2, "0")}
             :00
           </strong>
         </div>

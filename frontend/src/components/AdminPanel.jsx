@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api, getSSEUrl } from '../api';
 import './AdminPanel.css';
 
-const HOURS = Array.from({ length: 12 }, (_, i) => i + 8);
+const HOURS = [8, 10, 12, 14, 16, 18]; // Turnos de 2 horas
 const DAY_NAMES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
@@ -250,7 +250,7 @@ const AdminPanel = ({ onClose }) => {
                         {DAY_NAMES[d.getDay()]} {d.getDate()}/{d.getMonth()+1}
                       </div>
                       <div className="admin-list-item__time">
-                        {String(h).padStart(2,'0')}:00 – {String(h+1).padStart(2,'0')}:00
+                        {String(h).padStart(2,'0')}:00 – {String(h+2).padStart(2,'0')}:00
                       </div>
                     </div>
                     <div className="admin-list-item__center">
