@@ -9,7 +9,7 @@ import {
   getStats
 } from '../controllers/appointments.js';
 import { authMiddleware } from '../controllers/auth.js';
-import { bookingLimiter } from '../index.js';
+import { bookingLimiter } from '../middleware/rateLimits.js';
 
 const router = Router();
 

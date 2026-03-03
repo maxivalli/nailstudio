@@ -1,13 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { initDB } from './db/index.js';
 import appointmentsRouter from './routes/appointments.js';
 import galleryRouter from './routes/gallery.js';
 import authRouter from './routes/auth.js';
 import { initWhatsApp, getWhatsAppInfo } from './services/whatsapp.js';
+import { generalLimiter, loginLimiter } from './middleware/rateLimits.js';
 
 dotenv.config();
 
@@ -30,35 +30,7 @@ export const sseClients = new Set();
 // ─── Security middleware ──────────────────────────────────────────────────────
 app.use(helmet());
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
-app.use(express.json({ limit: '10kb' })); // Limitar tamaño del body
-
-// Rate limiting general
-const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, error: 'Demasiadas solicitudes. Intentá de nuevo en 15 minutos.' },
-});
-
-// Rate limiting estricto para reservas (evitar spam)
-export const bookingLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hora
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, error: 'Límite de reservas alcanzado. Intentá de nuevo en una hora.' },
-});
-
-// Rate limiting para login (evitar fuerza bruta)
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, error: 'Demasiados intentos de login. Intentá de nuevo en 15 minutos.' },
-});
-
+app.use(express.json({ limit: '10kb' }));
 app.use('/api/', generalLimiter);
 
 // SSE endpoint for real-time updates
