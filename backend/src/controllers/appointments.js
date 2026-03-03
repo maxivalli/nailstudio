@@ -94,7 +94,27 @@ export const createAppointment = async (req, res) => {
     return res.status(400).json({ success: false, error: 'Todos los campos son requeridos' });
   }
 
+  // Sanitizar y validar name
+  const cleanName = String(name).trim().slice(0, 100);
+  if (cleanName.length < 2) {
+    return res.status(400).json({ success: false, error: 'El nombre debe tener al menos 2 caracteres' });
+  }
+
+  // Sanitizar y validar whatsapp (solo dígitos, entre 8 y 20 caracteres)
+  const cleanWhatsapp = String(whatsapp).replace(/\D/g, '').slice(0, 20);
+  if (cleanWhatsapp.length < 8) {
+    return res.status(400).json({ success: false, error: 'El número de WhatsApp debe tener al menos 8 dígitos' });
+  }
+
+  // Validar formato de fecha
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(appointment_date)) {
+    return res.status(400).json({ success: false, error: 'Formato de fecha inválido' });
+  }
+
   const d = new Date(appointment_date + 'T12:00:00');
+  if (isNaN(d.getTime())) {
+    return res.status(400).json({ success: false, error: 'Fecha inválida' });
+  }
   if (d.getDay() === 0) {
     return res.status(400).json({ success: false, error: 'Los domingos no hay atención' });
   }
@@ -109,7 +129,7 @@ export const createAppointment = async (req, res) => {
     const result = await pool.query(
       `INSERT INTO appointments (name, whatsapp, appointment_date, appointment_hour, status)
        VALUES ($1, $2, $3, $4, 'confirmed') RETURNING *`,
-      [name, whatsapp, appointment_date, hour]
+      [cleanName, cleanWhatsapp, appointment_date, hour]
     );
 
     const appointment = result.rows[0];

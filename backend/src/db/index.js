@@ -33,7 +33,7 @@ export const initDB = async () => {
         name VARCHAR(100) NOT NULL,
         whatsapp VARCHAR(20) NOT NULL,
         appointment_date DATE NOT NULL,
-        appointment_hour SMALLINT NOT NULL CHECK (appointment_hour >= 8 AND appointment_hour < 20),
+        appointment_hour SMALLINT NOT NULL CHECK (appointment_hour IN (8, 10, 12, 14, 16, 18)),
         status VARCHAR(20) DEFAULT 'confirmed' CHECK (status IN ('confirmed','cancelled','completed')),
         created_at TIMESTAMP DEFAULT NOW(),
         UNIQUE(appointment_date, appointment_hour)
