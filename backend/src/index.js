@@ -9,6 +9,7 @@ import chatRouter from './routes/chat.js';
 import servicesRouter from './routes/services.js';
 import authRouter from './routes/auth.js';
 import { initWhatsApp, getWhatsAppInfo } from './services/whatsapp.js';
+import { initScheduler } from './services/scheduler.js';
 import { generalLimiter, loginLimiter } from './middleware/rateLimits.js';
 
 dotenv.config();
@@ -79,6 +80,7 @@ app.get('/api/whatsapp/status', async (_, res) => {
 const start = async () => {
   await initDB();
   initWhatsApp();
+  initScheduler();
 
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);

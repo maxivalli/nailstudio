@@ -20,13 +20,13 @@ router.get('/', async (req, res) => {
 // POST /api/services — solo admin
 router.post('/', requireAuth, async (req, res) => {
   const { name, price, category } = req.body;
-  if (!name || price === undefined) {
-    return res.status(400).json({ success: false, error: 'Nombre y precio requeridos.' });
+  if (!name) {
+    return res.status(400).json({ success: false, error: 'Nombre requerido.' });
   }
   try {
     const result = await pool.query(
       'INSERT INTO services (name, price, category) VALUES ($1, $2, $3) RETURNING *',
-      [name, parseInt(price), category || 'servicio']
+      [name, price ? parseInt(price) : null, category || 'servicio']
     );
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {

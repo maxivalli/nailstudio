@@ -488,15 +488,17 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
             <option value="">Seleccioná un servicio...</option>
             {services.map(s => (
               <option key={s.id} value={s.id}>
-                {s.name} — ${parseInt(s.price).toLocaleString("es-AR")}
+                {s.name}{s.price ? ` — $${parseInt(s.price).toLocaleString('es-AR')}` : ''}
               </option>
             ))}
           </select>
-          {form.service_price && (
+          {form.service_price ? (
             <div className="bc-price-tag">
               Precio estimado: <strong>${parseInt(form.service_price).toLocaleString("es-AR")}</strong>
             </div>
-          )}
+          ) : form.service_id ? (
+            <div className="bc-price-tag">Precio a consultar en el local</div>
+          ) : null}
         </div>
 
         {error && (

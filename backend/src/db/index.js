@@ -45,11 +45,12 @@ export const initDB = async () => {
       -- Agregar columnas de servicio si no existen
       ALTER TABLE appointments ADD COLUMN IF NOT EXISTS service_name VARCHAR(150);
       ALTER TABLE appointments ADD COLUMN IF NOT EXISTS service_price INTEGER;
+      ALTER TABLE services ALTER COLUMN price DROP NOT NULL;
 
       CREATE TABLE IF NOT EXISTS services (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
-        price INTEGER NOT NULL,
+        price INTEGER,
         category VARCHAR(50) DEFAULT 'servicio',
         active BOOLEAN DEFAULT true,
         sort_order INTEGER DEFAULT 0,
