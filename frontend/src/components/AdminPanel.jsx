@@ -191,7 +191,7 @@ const AdminPanel = ({ onClose }) => {
               Turnos
             </button>
             <button className={`admin-tab ${activeTab === 'servicios' ? 'admin-tab--active' : ''}`} onClick={() => setActiveTab('servicios')}>
-              Servicios del chatbot
+              Servicios
             </button>
           </div>
 
