@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
 import { api } from './api';
+import Chatbot from './components/Chatbot';
 
 const AppLayout = ({ children, isAuthenticated, onLogout }) => (
   <>
@@ -72,6 +73,7 @@ const App = () => {
         } />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <Chatbot />
     </BrowserRouter>
   );
 };

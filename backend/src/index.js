@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import { initDB } from './db/index.js';
 import appointmentsRouter from './routes/appointments.js';
 import galleryRouter from './routes/gallery.js';
+import chatRouter from './routes/chat.js';
+import servicesRouter from './routes/services.js';
 import authRouter from './routes/auth.js';
 import { initWhatsApp, getWhatsAppInfo } from './services/whatsapp.js';
 import { generalLimiter, loginLimiter } from './middleware/rateLimits.js';
@@ -63,6 +65,8 @@ export const broadcast = (event, data) => {
 app.use('/api/auth', loginLimiter, authRouter);
 app.use('/api/appointments', appointmentsRouter);
 app.use('/api/gallery', galleryRouter);
+app.use('/api/chat', chatRouter);
+app.use('/api/services', servicesRouter);
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 

@@ -78,6 +78,23 @@ export const api = {
     headers: authHeaders(),
     body: JSON.stringify(data),
   }).then(r => r.json()),
+  // Services
+  getServices: () => fetch(`${BASE}/services`).then(r => r.json()),
+  createService: (data) => fetch(`${BASE}/services`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  }).then(r => r.json()),
+  updateService: (id, data) => fetch(`${BASE}/services/${id}`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  }).then(r => r.json()),
+  deleteService: (id) => fetch(`${BASE}/services/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  }).then(r => r.json()),
+
   deleteGalleryItem: (id) => fetch(`${BASE}/gallery/${id}`, {
     method: 'DELETE',
     headers: authHeaders(),
