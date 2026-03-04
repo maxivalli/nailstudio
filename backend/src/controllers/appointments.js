@@ -16,7 +16,7 @@ export const getAppointments = async (req, res) => {
     const result = await pool.query(query, params);
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 
@@ -28,7 +28,7 @@ export const getAllAppointments = async (req, res) => {
     );
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 
@@ -81,7 +81,7 @@ export const getAvailableSlots = async (req, res) => {
     console.error('Error obteniendo slots:', err.message);
     res.status(500).json({ 
       success: false, 
-      error: 'Error al obtener horarios disponibles.'
+      error: err.message || 'Error al obtener horarios disponibles'
     });
   }
 };
@@ -119,6 +119,15 @@ export const createAppointment = async (req, res) => {
     return res.status(400).json({ success: false, error: 'Los domingos no hay atención' });
   }
 
+  // Validar que la fecha no sea pasada
+  const now = new Date();
+  const argentina = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+  const todayArg = new Date(argentina.getFullYear(), argentina.getMonth(), argentina.getDate());
+  const appointmentDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  if (appointmentDay < todayArg) {
+    return res.status(400).json({ success: false, error: 'No podés reservar turnos en fechas pasadas.' });
+  }
+
   const hour = parseInt(appointment_hour);
   const validHours = [8, 10, 12, 14, 16, 18];
   if (!validHours.includes(hour)) {
@@ -151,7 +160,7 @@ export const createAppointment = async (req, res) => {
     if (err.code === '23505') {
       return res.status(409).json({ success: false, error: 'Ese horario ya fue reservado. Elegí otro.' });
     }
-    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 
@@ -172,7 +181,7 @@ export const updateAppointmentStatus = async (req, res) => {
     broadcast('calendar_update', { type: 'status_change', appointment: result.rows[0] });
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 
@@ -184,7 +193,7 @@ export const deleteAppointment = async (req, res) => {
     broadcast('calendar_update', { type: 'deleted', id: parseInt(id) });
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 
@@ -205,6 +214,6 @@ export const getStats = async (req, res) => {
       total_completed: parseInt(row.total_completed),
     }});
   } catch (err) {
-    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+    res.status(500).json({ success: false, error: err.message });
   }
 };

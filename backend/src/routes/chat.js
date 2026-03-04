@@ -18,7 +18,7 @@ const buildSystemPrompt = async () => {
   const byCategory = result.rows.reduce((acc, s) => {
     const cat = s.category || 'servicio';
     if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(`- ${s.name}${s.price ? `: $${s.price.toLocaleString('es-AR')}` : ' (consultar precio)'}`);
+    acc[cat].push(`- ${s.name}: $${s.price.toLocaleString('es-AR')}`);
     return acc;
   }, {});
 
@@ -53,6 +53,21 @@ router.post('/', chatLimiter, async (req, res) => {
     return res.status(400).json({ success: false, error: 'Mensajes inválidos.' });
   }
 
+  // Limitar historial a los últimos 10 mensajes y truncar contenido largo
+  const MAX_MESSAGES = 10;
+  const MAX_CONTENT_LENGTH = 500;
+  const safeMessages = messages
+    .slice(-MAX_MESSAGES)
+    .map(m => ({
+      role: m.role === 'user' || m.role === 'assistant' ? m.role : 'user',
+      content: String(m.content || '').slice(0, MAX_CONTENT_LENGTH),
+    }))
+    .filter(m => m.content.length > 0);
+
+  if (safeMessages.length === 0) {
+    return res.status(400).json({ success: false, error: 'Mensajes inválidos.' });
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ success: false, error: 'API key no configurada.' });
@@ -72,7 +87,7 @@ router.post('/', chatLimiter, async (req, res) => {
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 300,
         system: systemPrompt,
-        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        messages: safeMessages,
       }),
     });
 

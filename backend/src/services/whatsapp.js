@@ -124,7 +124,7 @@ export const sendAdminNotification = async (appointment) => {
 🔔 *Nuevo Turno Reservado*
 
 👤 Cliente: ${appointment.name}
-💅🏻 Trabajo: ${appointment.service_name}
+${appointment.service_name ? `💅🏻 Trabajo: ${appointment.service_name}` : ''}
 📱 WhatsApp: ${appointment.whatsapp}
 📅 Fecha: ${formatDate(appointment.appointment_date)}
 🕐 Hora: ${appointment.appointment_hour}:00 – ${appointment.appointment_hour + 2}:00 hs (2 horas)

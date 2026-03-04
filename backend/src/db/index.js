@@ -45,8 +45,6 @@ export const initDB = async () => {
       -- Agregar columnas de servicio si no existen
       ALTER TABLE appointments ADD COLUMN IF NOT EXISTS service_name VARCHAR(150);
       ALTER TABLE appointments ADD COLUMN IF NOT EXISTS service_price INTEGER;
-      ALTER TABLE services ALTER COLUMN price DROP NOT NULL;
-
       CREATE TABLE IF NOT EXISTS services (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
@@ -56,6 +54,9 @@ export const initDB = async () => {
         sort_order INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT NOW()
       );
+
+      -- Permitir precio nulo en servicios
+      ALTER TABLE services ALTER COLUMN price DROP NOT NULL;
 
       -- Servicios por defecto (solo si la tabla está vacía)
       INSERT INTO services (name, price, category, sort_order)

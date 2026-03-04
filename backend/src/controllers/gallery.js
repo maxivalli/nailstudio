@@ -18,7 +18,7 @@ export const getGallery = async (req, res) => {
     res.json({ success: true, data: result.rows });
   } catch (err) {
     console.error('Error fetching gallery:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };
 
@@ -39,7 +39,7 @@ export const addGalleryItem = async (req, res) => {
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (err) {
     console.error('Error agregando imagen a galería:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };
 
@@ -61,7 +61,7 @@ export const updateGalleryItem = async (req, res) => {
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     console.error('Error actualizando imagen de galería:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };
 
@@ -79,7 +79,7 @@ export const deleteGalleryItem = async (req, res) => {
     res.json({ success: true, message: 'Imagen eliminada' });
   } catch (err) {
     console.error('Error eliminando imagen de galería:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };
 
@@ -91,6 +91,6 @@ export const getCategories = async (req, res) => {
     res.json({ success: true, data: result.rows.map(r => r.category) });
   } catch (err) {
     console.error('Error fetching categories:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };
