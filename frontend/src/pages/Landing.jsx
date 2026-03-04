@@ -55,7 +55,7 @@ const Landing = () => {
         <div className="landing__stats">
           <div className="landing__stat">
             <span className="landing__stat-number">100+</span>
-            <span className="landing__stat-label">Clientas felices</span>
+            <span className="landing__stat-label">Clientas</span>
           </div>
           <div className="landing__stat-divider" />
           <div className="landing__stat">
@@ -65,7 +65,7 @@ const Landing = () => {
           <div className="landing__stat-divider" />
           <div className="landing__stat">
             <span className="landing__stat-number">3 años</span>
-            <span className="landing__stat-label">De experiencia</span>
+            <span className="landing__stat-label">Experiencia</span>
           </div>
         </div>
       </div>
