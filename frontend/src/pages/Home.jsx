@@ -1,9 +1,14 @@
 import React from 'react';
 import Gallery from '../components/Gallery';
 import BookingCalendar from '../components/BookingCalendar';
+import { useEffect } from 'react';
 import './Home.css';
 
 const Home = () => {
+  useEffect(() => {
+    document.title = 'Turnos & Galería — SY Studio';
+  }, []);
+
   return (
     <div className="home">
       {/* Hero */}
@@ -65,7 +70,7 @@ const Home = () => {
                     <path d="M7.5 4V7.5L10 9.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
                   </svg>
                 </div>
-                <span>Turnos de 1 hora, 8:00 – 20:00</span>
+                <span>Turnos de 2 horas, 8:00 – 20:00</span>
               </div>
               <div className="home-feature">
                 <div className="home-feature__icon">

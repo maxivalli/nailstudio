@@ -7,6 +7,7 @@ const Landing = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    document.title = 'SY Studio — Manicuria & Nail Art en Santa Fe';
     const t = setTimeout(() => setVisible(true), 100);
     return () => clearTimeout(t);
   }, []);
@@ -28,7 +29,7 @@ const Landing = () => {
         <p className="landing__tagline">
           Arte y cuidado para tus manos.
           <br />
-          Turno online, para más comididad ✨.
+          Turno online, para más comodidad ✨.
         </p>
 
         <div className="landing__actions">

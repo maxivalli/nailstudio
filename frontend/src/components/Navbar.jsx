@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AdminPanel from './AdminPanel';
 import GalleryManager from './GalleryManager';
@@ -18,6 +18,7 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
   }, [adminOpen]);
   const [galleryManagerOpen, setGalleryManagerOpen] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const dropdownRef = useRef(null);
   const [waStatus, setWaStatus] = useState(null); // null = cargando, true = conectado, false = desconectado
 
   useEffect(() => {
@@ -36,7 +37,19 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
     }
   }, [isAuthenticated, showMenu]);
 
+  // Cerrar dropdown al hacer click afuera
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
   const scrollTo = (id) => {
+    setShowMenu(false);
     if (location.pathname !== '/home') {
       navigate('/home');
       setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 300);
@@ -86,7 +99,7 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
           <button className="navbar__link" onClick={() => scrollTo('queue')}>Turnos</button>
           
           {isAuthenticated ? (
-            <div className="navbar__dropdown">
+            <div className="navbar__dropdown" ref={dropdownRef}>
               <button className="navbar__admin navbar__admin--auth" onClick={() => setShowMenu(!showMenu)}>
                 <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
                   <circle cx="7" cy="4" r="2.5" stroke="currentColor" strokeWidth="1"/>
