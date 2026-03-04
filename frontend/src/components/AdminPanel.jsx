@@ -455,6 +455,11 @@ const AdminPanel = ({ onClose }) => {
                                 <span className="admin-cell-appt__name">
                                   {appt.name}
                                 </span>
+                                {appt.service_name && (
+                                  <span className="admin-cell-appt__service">
+                                    {appt.service_name}
+                                  </span>
+                                )}
                                 <span className="admin-cell-appt__wa">
                                   {appt.whatsapp}
                                 </span>
@@ -501,6 +506,11 @@ const AdminPanel = ({ onClose }) => {
                             <div className="admin-list-item__name">
                               {appt.name}
                             </div>
+                            {appt.service_name && (
+                              <div className="admin-list-item__service">
+                                {appt.service_name}
+                              </div>
+                            )}
                             <div className="admin-list-item__wa">
                               {appt.whatsapp}
                             </div>
@@ -541,6 +551,9 @@ const AdminPanel = ({ onClose }) => {
             </div>
             <div className="admin-drawer__info">
               <span>{selectedAppt.whatsapp}</span>
+              {selectedAppt.service_name && (
+                <span className="admin-drawer__service">💅 {selectedAppt.service_name}</span>
+              )}
               <span>
                 {(() => {
                   const ds =

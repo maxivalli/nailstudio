@@ -596,3 +596,21 @@
   color: var(--stone);
   white-space: nowrap;
 }
+
+.admin-cell-appt__service {
+  font-size: 0.68rem;
+  color: #b07d9a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-list-item__service {
+  font-size: 0.75rem;
+  color: #b07d9a;
+  margin-top: 1px;
+}
+
+body.admin-is-open {
+  overflow: hidden;
+}
