@@ -6,7 +6,10 @@ import {
   createAppointment,
   updateAppointmentStatus,
   deleteAppointment,
-  getStats
+  getStats,
+  getServiceStats,
+  getFrequentClients,
+  getClientHistory
 } from '../controllers/appointments.js';
 import { authMiddleware } from '../controllers/auth.js';
 import { bookingLimiter } from '../middleware/rateLimits.js';
@@ -23,5 +26,8 @@ router.get('/all', authMiddleware, getAllAppointments);
 router.get('/stats', authMiddleware, getStats);
 router.patch('/:id/status', authMiddleware, updateAppointmentStatus);
 router.delete('/:id', authMiddleware, deleteAppointment);
+router.get('/analytics/services', authMiddleware, getServiceStats);
+router.get('/analytics/clients', authMiddleware, getFrequentClients);
+router.get('/analytics/client/:whatsapp', authMiddleware, getClientHistory);
 
 export default router;

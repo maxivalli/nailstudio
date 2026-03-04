@@ -120,7 +120,7 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
                       <rect x="1" y="9" width="4" height="4" stroke="currentColor" strokeWidth="1"/>
                       <rect x="9" y="9" width="4" height="4" stroke="currentColor" strokeWidth="1"/>
                     </svg>
-                    Turnos
+                    Panel
                   </button>
                   <button onClick={handleGalleryClick}>
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

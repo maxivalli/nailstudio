@@ -614,3 +614,242 @@
 body.admin-is-open {
   overflow: hidden;
 }
+/* ── Analytics ─────────────────────────────────────────────────────────────── */
+.admin-analytics {
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.admin-analytics__loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--stone);
+  font-size: 14px;
+}
+
+.admin-analytics__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-analytics__title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--espresso);
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--sand);
+}
+
+.admin-analytics__empty {
+  font-size: 13px;
+  color: var(--stone);
+  margin: 0;
+}
+
+/* Barras de servicios */
+.admin-analytics__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-analytics__item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.3rem;
+}
+
+.admin-analytics__item-name {
+  font-size: 13px;
+  color: var(--espresso);
+}
+
+.admin-analytics__item-count {
+  font-size: 12px;
+  color: var(--stone);
+}
+
+.admin-analytics__bar-bg {
+  height: 6px;
+  background: var(--sand);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.admin-analytics__bar {
+  height: 100%;
+  background: var(--espresso);
+  border-radius: 99px;
+  transition: width 0.6s ease;
+}
+
+/* Clientas frecuentes */
+.admin-analytics__clients {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-analytics__client {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--cream);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.admin-analytics__client:hover {
+  background: var(--sand);
+}
+
+.admin-analytics__client-rank {
+  font-size: 11px;
+  color: var(--stone);
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.admin-analytics__client-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-analytics__client-name {
+  font-size: 14px;
+  color: var(--espresso);
+  font-weight: 500;
+}
+
+.admin-analytics__client-meta {
+  font-size: 11px;
+  color: var(--stone);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-analytics__client-badge {
+  background: var(--espresso);
+  color: var(--cream);
+  font-size: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Buscador historial */
+.admin-analytics__search {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.admin-analytics__search-input {
+  flex: 1;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--sand);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  color: var(--espresso);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.admin-analytics__search-input:focus {
+  border-color: var(--stone);
+}
+
+.admin-analytics__search-btn {
+  padding: 0.55rem 1.1rem;
+  background: var(--espresso);
+  color: var(--cream);
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.admin-analytics__search-btn:hover {
+  background: var(--stone);
+}
+
+.admin-analytics__search-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Historial resultado */
+.admin-analytics__history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.admin-analytics__history-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--espresso);
+  margin: 0 0 0.25rem;
+}
+
+.admin-analytics__history-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 7px;
+  background: var(--cream);
+  font-size: 12px;
+}
+
+.admin-analytics__history-item--cancelled {
+  opacity: 0.5;
+}
+
+.admin-analytics__history-date {
+  color: var(--stone);
+  flex-shrink: 0;
+  width: 110px;
+}
+
+.admin-analytics__history-service {
+  flex: 1;
+  color: var(--espresso);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-analytics__history-status {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--stone);
+}
+
+.admin-analytics__history-item--completed .admin-analytics__history-status {
+  color: #6a8f6a;
+}
+
+.admin-analytics__history-item--cancelled .admin-analytics__history-status {
+  color: #b07070;
+}

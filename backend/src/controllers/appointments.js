@@ -100,10 +100,12 @@ export const createAppointment = async (req, res) => {
     return res.status(400).json({ success: false, error: 'El nombre debe tener al menos 2 caracteres' });
   }
 
-  // Sanitizar y validar whatsapp (solo dígitos, entre 8 y 20 caracteres)
-  const cleanWhatsapp = String(whatsapp).replace(/\D/g, '').slice(0, 20);
-  if (cleanWhatsapp.length < 8) {
-    return res.status(400).json({ success: false, error: 'El número de WhatsApp debe tener al menos 8 dígitos' });
+  // Normalizar y validar whatsapp: exactamente 10 dígitos sin prefijos
+  let cleanWhatsapp = String(whatsapp).replace(/\D/g, '');
+  cleanWhatsapp = cleanWhatsapp.replace(/^(0549|549|054|54|0)/, '');
+  cleanWhatsapp = cleanWhatsapp.slice(0, 10);
+  if (cleanWhatsapp.length !== 10) {
+    return res.status(400).json({ success: false, error: 'El número debe tener exactamente 10 dígitos, ej: 3408123456' });
   }
 
   // Validar formato de fecha
@@ -117,15 +119,6 @@ export const createAppointment = async (req, res) => {
   }
   if (d.getDay() === 0) {
     return res.status(400).json({ success: false, error: 'Los domingos no hay atención' });
-  }
-
-  // Validar que la fecha no sea pasada
-  const now = new Date();
-  const argentina = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
-  const todayArg = new Date(argentina.getFullYear(), argentina.getMonth(), argentina.getDate());
-  const appointmentDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  if (appointmentDay < todayArg) {
-    return res.status(400).json({ success: false, error: 'No podés reservar turnos en fechas pasadas.' });
   }
 
   const hour = parseInt(appointment_hour);
@@ -215,5 +208,72 @@ export const getStats = async (req, res) => {
     }});
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
+  }
+};
+// ── Estadísticas avanzadas ────────────────────────────────────────────────────
+
+export const getServiceStats = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        service_name,
+        COUNT(*) AS total,
+        COUNT(*) FILTER (WHERE status = 'completed') AS completed,
+        COUNT(*) FILTER (WHERE status = 'cancelled') AS cancelled
+      FROM appointments
+      WHERE service_name IS NOT NULL
+      GROUP BY service_name
+      ORDER BY total DESC
+      LIMIT 10
+    `);
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    console.error('Error en getServiceStats:', err.message);
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+  }
+};
+
+export const getFrequentClients = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        name,
+        whatsapp,
+        COUNT(*) AS total_appointments,
+        COUNT(*) FILTER (WHERE status = 'completed') AS completed,
+        MAX(appointment_date) AS last_visit,
+        MIN(appointment_date) AS first_visit
+      FROM appointments
+      WHERE status != 'cancelled'
+      GROUP BY name, whatsapp
+      ORDER BY total_appointments DESC
+      LIMIT 10
+    `);
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    console.error('Error en getFrequentClients:', err.message);
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
+  }
+};
+
+export const getClientHistory = async (req, res) => {
+  const { whatsapp } = req.params;
+  if (!whatsapp || whatsapp.replace(/\D/g, '').length < 8) {
+    return res.status(400).json({ success: false, error: 'Número inválido.' });
+  }
+  const cleaned = whatsapp.replace(/\D/g, '');
+  try {
+    const result = await pool.query(`
+      SELECT
+        id, name, whatsapp, appointment_date, appointment_hour,
+        service_name, service_price, status, created_at
+      FROM appointments
+      WHERE whatsapp LIKE $1
+      ORDER BY appointment_date DESC, appointment_hour DESC
+    `, ['%' + cleaned.slice(-8)]);
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    console.error('Error en getClientHistory:', err.message);
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };

@@ -348,7 +348,15 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
       const svc = services.find(s => String(s.id) === e.target.value);
       setForm(p => ({ ...p, service_id: e.target.value, service_name: svc?.name || "", service_price: svc?.price || "" }));
     } else {
-      const val = e.target.name === "whatsapp" ? e.target.value.replace(/\D/g, "") : e.target.value;
+      let val = e.target.value;
+      if (e.target.name === "whatsapp") {
+        // Solo dígitos
+        val = val.replace(/\D/g, "");
+        // Eliminar prefijos: 0, 54, 549, 0549
+        val = val.replace(/^(0549|549|054|54|0)/, "");
+        // Limitar a 10 dígitos
+        val = val.slice(0, 10);
+      }
       setForm(p => ({ ...p, [e.target.name]: val }));
     }
     setError("");
@@ -357,7 +365,7 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) return setError("Ingresá tu nombre");
-    if (form.whatsapp.length < 8) return setError("Ingresá un WhatsApp válido");
+    if (form.whatsapp.length !== 10) return setError("Ingresá un número de 10 dígitos, ej: 3408123456");
     if (!form.service_id) return setError("Seleccioná el tipo de servicio");
 
     setLoading(true);
@@ -473,7 +481,7 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
             name="whatsapp"
             value={form.whatsapp}
             onChange={handleChange}
-            placeholder="Ej: 3408612345"
+            placeholder="Ej: 3408123456 (10 dígitos)"
           />
         </div>
 
@@ -486,10 +494,21 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
             onChange={handleChange}
           >
             <option value="">Seleccioná un servicio...</option>
-            {services.map(s => (
-              <option key={s.id} value={s.id}>
-                {s.name}{s.price ? ` — $${parseInt(s.price).toLocaleString('es-AR')}` : ''}
-              </option>
+            {Object.entries(
+              services.reduce((acc, s) => {
+                const cat = s.category || 'servicio';
+                if (!acc[cat]) acc[cat] = [];
+                acc[cat].push(s);
+                return acc;
+              }, {})
+            ).map(([cat, items]) => (
+              <optgroup key={cat} label={cat.charAt(0).toUpperCase() + cat.slice(1)}>
+                {items.map(s => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}{s.price ? ` — $${parseInt(s.price).toLocaleString('es-AR')}` : ''}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
           {form.service_price ? (
@@ -644,16 +663,18 @@ const BookingCalendar = () => {
         if (res.success) {
           setAppointments(res.data);
         } else {
+          console.error('❌ [fetchAppointments] Respuesta sin éxito:', res);
         }
       })
       .catch((err) => {
+        console.error('❌ [fetchAppointments] Error:', err);
       });
   }, [weekStart, refreshTrigger]);
 
   // Cargar appointments inicialmente y cuando cambia la semana o refreshTrigger
   useEffect(() => {
     fetchAppointments();
-  }, [fetchAppointments]);
+  }, [weekStart, refreshTrigger, fetchAppointments]);
 
   // SSE for real-time updates - SOLO SE MONTA UNA VEZ
   useEffect(() => {

@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Gallery from '../components/Gallery';
 import BookingCalendar from '../components/BookingCalendar';
-import { useEffect } from 'react';
 import './Home.css';
 
 const Home = () => {

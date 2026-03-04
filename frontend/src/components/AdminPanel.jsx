@@ -64,6 +64,14 @@ const AdminPanel = ({ onClose }) => {
   });
   const [savingService, setSavingService] = useState(false);
 
+  // Analytics state
+  const [serviceStats, setServiceStats] = useState([]);
+  const [frequentClients, setFrequentClients] = useState([]);
+  const [clientSearch, setClientSearch] = useState('');
+  const [clientHistory, setClientHistory] = useState(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+  const [searchingClient, setSearchingClient] = useState(false);
+
   const fetchServices = useCallback(async () => {
     const res = await api.getServices();
     if (res.success) setServices(res.data);
@@ -125,11 +133,46 @@ const AdminPanel = ({ onClose }) => {
     };
 
     connect();
+
     return () => {
-      es?.close();
+      es.close();
       clearTimeout(retryTimeout);
     };
   }, [fetchAll]);
+
+  const loadAnalytics = useCallback(async () => {
+    if (serviceStats.length > 0) return;
+    setLoadingAnalytics(true);
+    try {
+      const [svc, clients] = await Promise.all([
+        api.getServiceStats(),
+        api.getFrequentClients(),
+      ]);
+      if (svc.success) setServiceStats(svc.data);
+      if (clients.success) setFrequentClients(clients.data);
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  }, [serviceStats.length]);
+
+  const searchClient = async () => {
+    if (!clientSearch.trim()) return;
+    setSearchingClient(true);
+    setClientHistory(null);
+    try {
+      const res = await api.getClientHistory(clientSearch.trim());
+      if (res.success) setClientHistory(res.data);
+    } finally {
+      setSearchingClient(false);
+    }
+  };
+
+  const formatDateShort = (dateStr) => {
+    const d = new Date(String(dateStr).split("T")[0] + "T12:00:00");
+    const days = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+    const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+    return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+  };
 
   const handleStatus = async (id, status) => {
     setUpdating(id);
@@ -254,6 +297,12 @@ const AdminPanel = ({ onClose }) => {
               onClick={() => setActiveTab("servicios")}
             >
               Servicios
+            </button>
+            <button
+              className={`admin-tab ${activeTab === "estadisticas" ? "admin-tab--active" : ""}`}
+              onClick={() => { setActiveTab("estadisticas"); loadAnalytics(); }}
+            >
+              Estadísticas
             </button>
           </div>
 
@@ -402,6 +451,101 @@ const AdminPanel = ({ onClose }) => {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {activeTab === "estadisticas" && (
+            <div className="admin-analytics">
+              {loadingAnalytics ? (
+                <div className="admin-analytics__loading">Cargando estadísticas...</div>
+              ) : (
+                <>
+                  {/* Servicios más pedidos */}
+                  <div className="admin-analytics__section">
+                    <h3 className="admin-analytics__title">Servicios más pedidos</h3>
+                    {serviceStats.length === 0 ? (
+                      <p className="admin-analytics__empty">Todavía no hay datos de servicios.</p>
+                    ) : (
+                      <div className="admin-analytics__list">
+                        {serviceStats.map((s, i) => {
+                          const max = serviceStats[0].total;
+                          const pct = Math.round((s.total / max) * 100);
+                          return (
+                            <div key={i} className="admin-analytics__item">
+                              <div className="admin-analytics__item-header">
+                                <span className="admin-analytics__item-name">{s.service_name}</span>
+                                <span className="admin-analytics__item-count">{s.total} turnos</span>
+                              </div>
+                              <div className="admin-analytics__bar-bg">
+                                <div className="admin-analytics__bar" style={{ width: pct + "%" }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Clientas frecuentes */}
+                  <div className="admin-analytics__section">
+                    <h3 className="admin-analytics__title">Clientas frecuentes</h3>
+                    {frequentClients.length === 0 ? (
+                      <p className="admin-analytics__empty">Todavía no hay datos.</p>
+                    ) : (
+                      <div className="admin-analytics__clients">
+                        {frequentClients.map((c, i) => (
+                          <div key={i} className="admin-analytics__client"
+                            onClick={() => { setClientSearch(c.whatsapp); setActiveTab("estadisticas"); }}>
+                            <div className="admin-analytics__client-rank">#{i + 1}</div>
+                            <div className="admin-analytics__client-info">
+                              <span className="admin-analytics__client-name">{c.name}</span>
+                              <span className="admin-analytics__client-meta">{c.whatsapp} · {c.total_appointments} turnos · última visita {formatDateShort(c.last_visit)}</span>
+                            </div>
+                            <div className="admin-analytics__client-badge">{c.total_appointments}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Historial por clienta */}
+                  <div className="admin-analytics__section">
+                    <h3 className="admin-analytics__title">Historial de clienta</h3>
+                    <div className="admin-analytics__search">
+                      <input
+                        className="admin-analytics__search-input"
+                        placeholder="Número de WhatsApp..."
+                        value={clientSearch}
+                        onChange={e => setClientSearch(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && searchClient()}
+                      />
+                      <button
+                        className="admin-analytics__search-btn"
+                        onClick={searchClient}
+                        disabled={searchingClient}
+                      >
+                        {searchingClient ? "..." : "Buscar"}
+                      </button>
+                    </div>
+                    {clientHistory !== null && (
+                      clientHistory.length === 0 ? (
+                        <p className="admin-analytics__empty">No se encontraron turnos para ese número.</p>
+                      ) : (
+                        <div className="admin-analytics__history">
+                          <p className="admin-analytics__history-name">{clientHistory[0].name} — {clientHistory.length} turno{clientHistory.length !== 1 ? "s" : ""}</p>
+                          {clientHistory.map((a, i) => (
+                            <div key={i} className={`admin-analytics__history-item admin-analytics__history-item--${a.status}`}>
+                              <span className="admin-analytics__history-date">{formatDateShort(a.appointment_date)} {String(a.appointment_hour).padStart(2,"0")}:00</span>
+                              <span className="admin-analytics__history-service">{a.service_name || "Sin servicio"}</span>
+                              <span className="admin-analytics__history-status">{a.status === "confirmed" ? "Confirmado" : a.status === "completed" ? "Completado" : "Cancelado"}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
 
