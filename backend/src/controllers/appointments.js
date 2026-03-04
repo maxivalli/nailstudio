@@ -88,7 +88,7 @@ export const getAvailableSlots = async (req, res) => {
 
 // Create appointment
 export const createAppointment = async (req, res) => {
-  const { name, whatsapp, appointment_date, appointment_hour } = req.body;
+  const { name, whatsapp, appointment_date, appointment_hour, service_name, service_price } = req.body;
 
   if (!name || !whatsapp || !appointment_date || appointment_hour === undefined) {
     return res.status(400).json({ success: false, error: 'Todos los campos son requeridos' });
@@ -127,9 +127,9 @@ export const createAppointment = async (req, res) => {
 
   try {
     const result = await pool.query(
-      `INSERT INTO appointments (name, whatsapp, appointment_date, appointment_hour, status)
-       VALUES ($1, $2, $3, $4, 'confirmed') RETURNING *`,
-      [cleanName, cleanWhatsapp, appointment_date, hour]
+      `INSERT INTO appointments (name, whatsapp, appointment_date, appointment_hour, status, service_name, service_price)
+       VALUES ($1, $2, $3, $4, 'confirmed', $5, $6) RETURNING *`,
+      [cleanName, cleanWhatsapp, appointment_date, hour, service_name || null, service_price ? parseInt(service_price) : null]
     );
 
     const appointment = result.rows[0];

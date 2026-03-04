@@ -611,3 +611,27 @@
   .bc-step__label { display: none; }
   .bc-day__slots { display: none; }
 }
+
+/* Service selector */
+.bc-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238C7B6E' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  padding-right: 2.2rem;
+  cursor: pointer;
+}
+
+.bc-price-tag {
+  margin-top: 0.5rem;
+  font-size: 13px;
+  color: var(--stone);
+  padding: 0.4rem 0.75rem;
+  background: var(--cream);
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.bc-price-tag strong {
+  color: var(--espresso);
+}

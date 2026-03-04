@@ -42,6 +42,10 @@ export const initDB = async () => {
       CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointment_date);
       CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status);
 
+      -- Agregar columnas de servicio si no existen
+      ALTER TABLE appointments ADD COLUMN IF NOT EXISTS service_name VARCHAR(150);
+      ALTER TABLE appointments ADD COLUMN IF NOT EXISTS service_price INTEGER;
+
       CREATE TABLE IF NOT EXISTS services (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,

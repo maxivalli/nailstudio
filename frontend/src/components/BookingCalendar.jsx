@@ -331,19 +331,26 @@ const HourPicker = ({ date, onSelectSlot, onBack }) => {
 
 // ─── Booking Form ─────────────────────────────────────────────────────────────
 const BookingForm = ({ date, slot, onBack, onSuccess }) => {
-  const [form, setForm] = useState({ name: "", whatsapp: "" });
+  const [form, setForm] = useState({ name: "", whatsapp: "", service_id: "", service_name: "", service_price: "" });
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    api.getServices().then(res => { if (res.success) setServices(res.data); });
+  }, []);
 
   const d = new Date(date + "T12:00:00");
   const dayLabel = `${DAY_NAMES_FULL[d.getDay()]} ${d.getDate()} de ${MONTH_NAMES[d.getMonth()]}`;
 
   const handleChange = (e) => {
-    const val =
-      e.target.name === "whatsapp"
-        ? e.target.value.replace(/\D/g, "")
-        : e.target.value;
-    setForm((p) => ({ ...p, [e.target.name]: val }));
+    if (e.target.name === "service_id") {
+      const svc = services.find(s => String(s.id) === e.target.value);
+      setForm(p => ({ ...p, service_id: e.target.value, service_name: svc?.name || "", service_price: svc?.price || "" }));
+    } else {
+      const val = e.target.name === "whatsapp" ? e.target.value.replace(/\D/g, "") : e.target.value;
+      setForm(p => ({ ...p, [e.target.name]: val }));
+    }
     setError("");
   };
 
@@ -351,6 +358,7 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
     e.preventDefault();
     if (!form.name.trim()) return setError("Ingresá tu nombre");
     if (form.whatsapp.length < 8) return setError("Ingresá un WhatsApp válido");
+    if (!form.service_id) return setError("Seleccioná el tipo de servicio");
 
     setLoading(true);
     try {
@@ -359,6 +367,8 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
         whatsapp: form.whatsapp.trim(),
         appointment_date: date,
         appointment_hour: slot.hour,
+        service_name: form.service_name,
+        service_price: form.service_price,
       });
       if (res.success) {
         onSuccess(res.data);
@@ -467,6 +477,28 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
           />
         </div>
 
+        <div className="bc-field">
+          <label className="bc-label">Tipo de servicio</label>
+          <select
+            className="bc-input bc-select"
+            name="service_id"
+            value={form.service_id}
+            onChange={handleChange}
+          >
+            <option value="">Seleccioná un servicio...</option>
+            {services.map(s => (
+              <option key={s.id} value={s.id}>
+                {s.name} — ${parseInt(s.price).toLocaleString("es-AR")}
+              </option>
+            ))}
+          </select>
+          {form.service_price && (
+            <div className="bc-price-tag">
+              Precio estimado: <strong>${parseInt(form.service_price).toLocaleString("es-AR")}</strong>
+            </div>
+          )}
+        </div>
+
         {error && (
           <div className="bc-error fade-in">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -565,6 +597,18 @@ const Confirmation = ({ appointment, onReset }) => {
           <span>WhatsApp</span>
           <strong>{appointment.whatsapp}</strong>
         </div>
+        {appointment.service_name && (
+          <div className="bc-confirm__row">
+            <span>Servicio</span>
+            <strong>{appointment.service_name}</strong>
+          </div>
+        )}
+        {appointment.service_price && (
+          <div className="bc-confirm__row">
+            <span>Precio</span>
+            <strong>${parseInt(appointment.service_price).toLocaleString("es-AR")}</strong>
+          </div>
+        )}
       </div>
 
       <p className="bc-confirm__note">

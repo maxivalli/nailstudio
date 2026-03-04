@@ -321,3 +321,11 @@
     right: 1.5rem;
   }
 }
+
+/* Ocultar chatbot cuando el admin panel está abierto */
+@media (max-width: 768px) {
+  body.admin-is-open .chatbot-bubble,
+  body.admin-is-open .chatbot-window {
+    display: none;
+  }
+}

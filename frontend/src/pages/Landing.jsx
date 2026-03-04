@@ -28,7 +28,7 @@ const Landing = () => {
         <p className="landing__tagline">
           Arte y cuidado para tus manos.
           <br />
-          Turno online, sin esperas innecesarias.
+          Turno online, para más comididad ✨.
         </p>
 
         <div className="landing__actions">

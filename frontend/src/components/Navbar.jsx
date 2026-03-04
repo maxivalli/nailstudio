@@ -11,6 +11,11 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
+
+  useEffect(() => {
+    document.body.classList.toggle('admin-is-open', adminOpen);
+    return () => document.body.classList.remove('admin-is-open');
+  }, [adminOpen]);
   const [galleryManagerOpen, setGalleryManagerOpen] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [waStatus, setWaStatus] = useState(null); // null = cargando, true = conectado, false = desconectado
