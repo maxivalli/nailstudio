@@ -94,17 +94,16 @@ export const sendClientConfirmation = async (appointment) => {
   if (!isReady) return { success: false, error: 'Evolution API no configurada o no conectada' };
 
   const message = `
-🎨 *SY Studio* - Turno Confirmado
+✨ SY Studio ✨ - Turno Confirmado
 
 ¡Hola ${appointment.name}!
 
-Tu turno ha sido confirmado:
+💖 Tu turno ha sido confirmado:
 📅 Día: ${formatDate(appointment.appointment_date)}
 🕐 Hora: ${appointment.appointment_hour}:00 – ${appointment.appointment_hour + 2}:00 hs (2 horas)
+📍 Dirección: San Lorenzo 1260
 
-Te esperamos! 💅
-
-Si necesitás cancelar o reprogramar, avisanos por este número.
+¡Te esperamos! 💅
   `.trim();
 
   try {
@@ -125,6 +124,7 @@ export const sendAdminNotification = async (appointment) => {
 🔔 *Nuevo Turno Reservado*
 
 👤 Cliente: ${appointment.name}
+💅🏻 Trabajo: ${appointment.service_name}
 📱 WhatsApp: ${appointment.whatsapp}
 📅 Fecha: ${formatDate(appointment.appointment_date)}
 🕐 Hora: ${appointment.appointment_hour}:00 – ${appointment.appointment_hour + 2}:00 hs (2 horas)
