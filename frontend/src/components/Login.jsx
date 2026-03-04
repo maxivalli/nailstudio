@@ -61,7 +61,7 @@ const Login = ({ onLoginSuccess }) => {
               className="login-input"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="admin"
+              placeholder="username"
               autoComplete="username"
               autoFocus
               disabled={loading}

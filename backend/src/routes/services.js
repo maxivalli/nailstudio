@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { pool } from '../db/index.js';
-import { requireAuth } from '../middleware/auth.js';
+import { authMiddleware } from '../controllers/auth.js';
 
 const router = Router();
 
@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/services — solo admin
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   const { name, price, category } = req.body;
   if (!name) {
     return res.status(400).json({ success: false, error: 'Nombre requerido.' });
@@ -36,17 +36,27 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // PUT /api/services/:id — solo admin
-router.put('/:id', requireAuth, async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
   const { name, price, category, active } = req.body;
   try {
+    // price puede ser null explícitamente para borrarlo
+    const priceValue = price === '' || price === null ? null : price !== undefined ? parseInt(price) : undefined;
+
     const result = await pool.query(
       `UPDATE services SET
         name = COALESCE($1, name),
-        price = COALESCE($2, price),
-        category = COALESCE($3, category),
-        active = COALESCE($4, active)
-       WHERE id = $5 RETURNING *`,
-      [name, price !== undefined ? parseInt(price) : null, category, active, req.params.id]
+        price = CASE WHEN $2::boolean THEN $3::integer ELSE price END,
+        category = COALESCE($4, category),
+        active = COALESCE($5, active)
+       WHERE id = $6 RETURNING *`,
+      [
+        name,
+        price !== undefined,   // $2: ¿se envió price?
+        priceValue,            // $3: valor (puede ser null)
+        category,
+        active,
+        req.params.id
+      ]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Servicio no encontrado.' });
@@ -59,7 +69,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 });
 
 // DELETE /api/services/:id — solo admin
-router.delete('/:id', requireAuth, async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     await pool.query('DELETE FROM services WHERE id = $1', [req.params.id]);
     res.json({ success: true });

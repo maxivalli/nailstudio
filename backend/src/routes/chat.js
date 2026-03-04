@@ -18,7 +18,7 @@ const buildSystemPrompt = async () => {
   const byCategory = result.rows.reduce((acc, s) => {
     const cat = s.category || 'servicio';
     if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(`- ${s.name}: $${s.price.toLocaleString('es-AR')}`);
+    acc[cat].push(`- ${s.name}${s.price ? `: $${s.price.toLocaleString('es-AR')}` : ' (consultar precio)'}`);
     return acc;
   }, {});
 

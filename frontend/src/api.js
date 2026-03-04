@@ -78,6 +78,11 @@ export const api = {
     headers: authHeaders(),
     body: JSON.stringify(data),
   }).then(r => r.json()),
+  deleteGalleryItem: (id) => fetch(`${BASE}/gallery/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  }).then(r => r.json()),
+
   // Services
   getServices: () => fetch(`${BASE}/services`).then(r => r.json()),
   createService: (data) => fetch(`${BASE}/services`, {
@@ -95,8 +100,4 @@ export const api = {
     headers: authHeaders(),
   }).then(r => r.json()),
 
-  deleteGalleryItem: (id) => fetch(`${BASE}/gallery/${id}`, {
-    method: 'DELETE',
-    headers: authHeaders(),
-  }).then(r => r.json()),
 };

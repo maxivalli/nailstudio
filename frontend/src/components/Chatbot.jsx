@@ -95,7 +95,6 @@ const Chatbot = () => {
               <circle cx="13" cy="8.5" r="1" fill="currentColor"/>
             </svg>
             <span className="chatbot-bubble__label">¡Hablemos!</span>
-            <span className="chatbot-bubble__ping" />
           </>
         )}
       </button>

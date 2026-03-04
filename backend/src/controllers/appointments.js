@@ -16,7 +16,7 @@ export const getAppointments = async (req, res) => {
     const result = await pool.query(query, params);
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };
 
@@ -28,7 +28,7 @@ export const getAllAppointments = async (req, res) => {
     );
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };
 
@@ -81,7 +81,7 @@ export const getAvailableSlots = async (req, res) => {
     console.error('Error obteniendo slots:', err.message);
     res.status(500).json({ 
       success: false, 
-      error: err.message || 'Error al obtener horarios disponibles'
+      error: 'Error al obtener horarios disponibles.'
     });
   }
 };
@@ -151,7 +151,7 @@ export const createAppointment = async (req, res) => {
     if (err.code === '23505') {
       return res.status(409).json({ success: false, error: 'Ese horario ya fue reservado. Elegí otro.' });
     }
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };
 
@@ -172,7 +172,7 @@ export const updateAppointmentStatus = async (req, res) => {
     broadcast('calendar_update', { type: 'status_change', appointment: result.rows[0] });
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };
 
@@ -184,7 +184,7 @@ export const deleteAppointment = async (req, res) => {
     broadcast('calendar_update', { type: 'deleted', id: parseInt(id) });
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };
 
@@ -205,6 +205,6 @@ export const getStats = async (req, res) => {
       total_completed: parseInt(row.total_completed),
     }});
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };

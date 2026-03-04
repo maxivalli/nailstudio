@@ -1,6 +1,7 @@
 /* ── Bubble ─────────────────────────────────────────── */
 .chatbot-bubble {
   position: fixed;
+  isolation: isolate;
   bottom: 2rem;
   right: 2rem;
   z-index: 1000;
@@ -23,6 +24,29 @@
 .chatbot-bubble--visible {
   opacity: 1;
   transform: scale(1) translateY(0);
+}
+
+.chatbot-bubble--visible:not(.chatbot-bubble--open)::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 999px;
+  background: conic-gradient(from var(--angle), transparent 60%, #E8C4B8, var(--espresso), transparent);
+  animation: border-spin 2.5s linear infinite;
+  z-index: -1;
+}
+
+.chatbot-bubble--visible:not(.chatbot-bubble--open)::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 999px;
+  background: var(--espresso);
+  z-index: -1;
+}
+
+.chatbot-bubble--visible:not(.chatbot-bubble--open):hover::after {
+  background: var(--stone);
 }
 
 .chatbot-bubble:hover {
@@ -52,20 +76,15 @@
   font-style: italic;
 }
 
-.chatbot-bubble__ping {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--rose);
-  animation: ping 2s cubic-bezier(0,0,0.2,1) infinite;
+@keyframes border-spin {
+  0% { --angle: 0deg; }
+  100% { --angle: 360deg; }
 }
 
-@keyframes ping {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.7); opacity: 0; }
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
 }
 
 /* ── Window ─────────────────────────────────────────── */

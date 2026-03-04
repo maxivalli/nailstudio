@@ -644,18 +644,16 @@ const BookingCalendar = () => {
         if (res.success) {
           setAppointments(res.data);
         } else {
-          console.error('❌ [fetchAppointments] Respuesta sin éxito:', res);
         }
       })
       .catch((err) => {
-        console.error('❌ [fetchAppointments] Error:', err);
       });
   }, [weekStart, refreshTrigger]);
 
   // Cargar appointments inicialmente y cuando cambia la semana o refreshTrigger
   useEffect(() => {
     fetchAppointments();
-  }, [weekStart, refreshTrigger, fetchAppointments]);
+  }, [fetchAppointments]);
 
   // SSE for real-time updates - SOLO SE MONTA UNA VEZ
   useEffect(() => {
