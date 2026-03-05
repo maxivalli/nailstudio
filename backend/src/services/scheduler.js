@@ -2,8 +2,8 @@ import cron from 'node-cron';
 import { pool } from '../db/index.js';
 import { sendReminder, isWhatsAppReady } from './whatsapp.js';
 
-// Corre todos los días a las 9:00 hora Argentina (UTC-3 → 12:00 UTC)
-const CRON_EXPRESSION = '0 12 * * *';
+// Corre todos los días a las 9:00 hora Argentina
+const CRON_EXPRESSION = '0 9 * * *';
 
 const sendDailyReminders = async () => {
   if (!isWhatsAppReady()) {
@@ -13,15 +13,17 @@ const sendDailyReminders = async () => {
 
   const today = new Date().toLocaleDateString('en-CA', {
     timeZone: 'America/Argentina/Buenos_Aires',
-  }); // Formato YYYY-MM-DD
+  });
 
-  console.log(`[Scheduler] Buscando turnos confirmados para hoy: ${today}`);
+  console.log(`[Scheduler] Buscando turnos para hoy: ${today}`);
 
   try {
+    // Solo trae turnos que NO tengan reminder_sent = true — previene duplicados
     const result = await pool.query(
       `SELECT * FROM appointments
        WHERE appointment_date = $1
          AND status = 'confirmed'
+         AND reminder_sent = false
        ORDER BY appointment_hour ASC`,
       [today]
     );
@@ -29,7 +31,7 @@ const sendDailyReminders = async () => {
     const appointments = result.rows;
 
     if (appointments.length === 0) {
-      console.log('[Scheduler] No hay turnos confirmados para hoy.');
+      console.log('[Scheduler] No hay turnos pendientes de recordatorio.');
       return;
     }
 
@@ -37,12 +39,18 @@ const sendDailyReminders = async () => {
 
     for (const appt of appointments) {
       const result = await sendReminder(appt);
+
       if (result.success) {
-        console.log(`[Scheduler] ✅ Recordatorio enviado a ${appt.name} (${appt.whatsapp})`);
+        // Marcar como enviado inmediatamente — si el server cae después, no se reenvía
+        await pool.query(
+          `UPDATE appointments SET reminder_sent = true WHERE id = $1`,
+          [appt.id]
+        );
+        console.log(`[Scheduler] ✅ Recordatorio enviado a ${appt.name}`);
       } else {
         console.error(`[Scheduler] ❌ Error enviando a ${appt.name}: ${result.error}`);
       }
-      // Pequeña pausa entre mensajes para no saturar la API
+
       await new Promise(r => setTimeout(r, 1000));
     }
 

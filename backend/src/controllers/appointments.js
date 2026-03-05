@@ -16,7 +16,8 @@ export const getAppointments = async (req, res) => {
     const result = await pool.query(query, params);
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    console.error('Error en getAppointments:', err.message);
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };
 
@@ -136,7 +137,8 @@ export const createAppointment = async (req, res) => {
 
     const appointment = result.rows[0];
 
-    broadcast('calendar_update', { type: 'new', appointment });
+    const { whatsapp: _w, ...publicAppt } = appointment;
+    broadcast('calendar_update', { type: 'new', appointment: publicAppt });
 
     // Enviar WhatsApp en segundo plano
     setImmediate(async () => {
@@ -171,7 +173,8 @@ export const updateAppointmentStatus = async (req, res) => {
       [status, id]
     );
     if (!result.rows.length) return res.status(404).json({ success: false, error: 'No encontrado' });
-    broadcast('calendar_update', { type: 'status_change', appointment: result.rows[0] });
+    const { whatsapp: _w2, ...publicAppt2 } = result.rows[0];
+    broadcast('calendar_update', { type: 'status_change', appointment: publicAppt2 });
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

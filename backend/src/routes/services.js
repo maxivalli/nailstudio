@@ -8,7 +8,7 @@ const router = Router();
 router.get('/', async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT * FROM services WHERE active = true ORDER BY sort_order ASC, id ASC'
+      'SELECT id, name, price, category FROM services WHERE active = true ORDER BY sort_order ASC, id ASC'
     );
     res.json({ success: true, data: result.rows });
   } catch (err) {

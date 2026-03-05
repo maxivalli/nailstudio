@@ -10,6 +10,9 @@ export const pool = new Pool(
     ? {
         connectionString: process.env.DATABASE_URL,
         ssl: { rejectUnauthorized: false },
+        max: 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
       }
     : {
         host: process.env.DB_HOST || 'localhost',
@@ -17,6 +20,9 @@ export const pool = new Pool(
         database: process.env.DB_NAME || 'nail_salon',
         user: process.env.DB_USER || 'postgres',
         password: process.env.DB_PASSWORD || 'postgres',
+        max: 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
       }
 );
 
@@ -44,6 +50,7 @@ export const initDB = async () => {
 
       -- Agregar columnas de servicio si no existen
       ALTER TABLE appointments ADD COLUMN IF NOT EXISTS service_name VARCHAR(150);
+      ALTER TABLE appointments ADD COLUMN IF NOT EXISTS reminder_sent BOOLEAN DEFAULT false;
       ALTER TABLE appointments ADD COLUMN IF NOT EXISTS service_price INTEGER;
       CREATE TABLE IF NOT EXISTS services (
         id SERIAL PRIMARY KEY,

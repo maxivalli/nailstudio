@@ -10,7 +10,15 @@ const chatLimiter = rateLimit({
   message: { success: false, error: 'Demasiados mensajes. Esperá un momento.' },
 });
 
+let promptCache = null;
+let promptCacheTime = 0;
+const PROMPT_CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+
 const buildSystemPrompt = async () => {
+  const now = Date.now();
+  if (promptCache && (now - promptCacheTime) < PROMPT_CACHE_TTL) {
+    return promptCache;
+  }
   const result = await pool.query(
     'SELECT name, price, category FROM services WHERE active = true ORDER BY sort_order ASC, id ASC'
   );
@@ -26,7 +34,7 @@ const buildSystemPrompt = async () => {
     .map(([cat, items]) => `${cat.toUpperCase()}:\n${items.join('\n')}`)
     .join('\n\n');
 
-  return `Sos la asistente virtual de SY Studio, un salón de manicuria premium. Tu nombre es Luna.
+  const prompt = `Sos la asistente virtual de SY Studio, un salón de manicuria premium. Tu nombre es Luna.
 Respondés en español, con un tono cálido, elegante y cercano — como una amiga que sabe de uñas.
 Sos concisa: no más de 3 oraciones por respuesta salvo que sea necesario.
 
@@ -44,6 +52,10 @@ WHATSAPP: +5493408680476
 
 Si te preguntan algo que no sabés, decí amablemente que pueden escribir por Instagram o WhatsApp.
 No inventes precios ni servicios que no estén en la lista.`;
+
+  promptCache = prompt;
+  promptCacheTime = Date.now();
+  return prompt;
 };
 
 router.post('/', chatLimiter, async (req, res) => {

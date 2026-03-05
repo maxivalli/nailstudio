@@ -9,6 +9,7 @@ import chatRouter from './routes/chat.js';
 import servicesRouter from './routes/services.js';
 import authRouter from './routes/auth.js';
 import { initWhatsApp, getWhatsAppInfo } from './services/whatsapp.js';
+import { authMiddleware } from './controllers/auth.js';
 import { initScheduler } from './services/scheduler.js';
 import { generalLimiter, loginLimiter } from './middleware/rateLimits.js';
 
@@ -39,7 +40,13 @@ app.use(express.json({ limit: '10kb' }));
 app.use('/api/', generalLimiter);
 
 // SSE endpoint for real-time updates
+const SSE_MAX_CLIENTS = 100;
+
 app.get('/api/events', (req, res) => {
+  if (sseClients.size >= SSE_MAX_CLIENTS) {
+    return res.status(503).json({ error: 'Demasiadas conexiones activas.' });
+  }
+
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -74,7 +81,7 @@ app.use('/api/services', servicesRouter);
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 
 // WhatsApp status endpoint
-app.get('/api/whatsapp/status', async (_, res) => {
+app.get('/api/whatsapp/status', authMiddleware, async (_, res) => {
   const info = await getWhatsAppInfo();
   res.json(info || { ready: false, provider: 'Evolution API' });
 });
