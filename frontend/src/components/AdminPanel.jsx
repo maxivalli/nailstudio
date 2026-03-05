@@ -115,7 +115,7 @@ const AdminPanel = ({ onClose }) => {
     setSavingService(true);
     await api.createService({
       ...newService,
-      price: newService.price ? parseInt(newService.price) : 0,
+      price: newService.price !== "" ? parseInt(newService.price) : null,
     });
     setNewService({ name: "", price: "", category: "manicuria" });
     await fetchServices();
@@ -382,9 +382,8 @@ const AdminPanel = ({ onClose }) => {
                     }
                   >
                     <option value="manicuria">Manicuria</option>
-                    <option value="nail art">Nail Art</option>
-                    <option value="esculpidas">Esculpidas</option>
-                    <option value="servicio">Otro</option>
+                    <option value="semipermanentes">Semipermanentes</option>
+                   
                   </select>
                   <button
                     className="admin-btn admin-btn--done"
@@ -432,9 +431,7 @@ const AdminPanel = ({ onClose }) => {
                           }
                         >
                           <option value="manicuria">Manicuria</option>
-                          <option value="nail art">Nail Art</option>
-                          <option value="esculpidas">Esculpidas</option>
-                          <option value="servicio">Otro</option>
+                          <option value="semipermanentes">Semipermanentes</option>
                         </select>
                         <button
                           className="admin-btn admin-btn--done"

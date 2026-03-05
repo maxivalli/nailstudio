@@ -340,6 +340,9 @@ const BookingForm = ({ date, slot, onBack, onSuccess, prefilledDesign, onDesignU
     api.getServices().then(res => { if (res.success) setServices(res.data); });
   }, []);
 
+  // Si viene con diseño, el servicio ya está definido
+  const hasDesign = Boolean(prefilledDesign);
+
   // Si viene un diseño precargado, agregarlo como nota en el nombre del servicio
   const designNote = prefilledDesign
     ? `${prefilledDesign.color}${prefilledDesign.style ? ` · ${prefilledDesign.style}` : ''}${prefilledDesign.description ? ` · ${prefilledDesign.description}` : ''}`
@@ -371,7 +374,7 @@ const BookingForm = ({ date, slot, onBack, onSuccess, prefilledDesign, onDesignU
     e.preventDefault();
     if (!form.name.trim()) return setError("Ingresá tu nombre");
     if (form.whatsapp.length !== 10) return setError("Ingresá un número de 10 dígitos, ej: 3408123456");
-    if (!form.service_id) return setError("Seleccioná el tipo de servicio");
+    if (!hasDesign && !form.service_id) return setError("Seleccioná el tipo de servicio");
 
     setLoading(true);
     try {
@@ -380,8 +383,10 @@ const BookingForm = ({ date, slot, onBack, onSuccess, prefilledDesign, onDesignU
         whatsapp: form.whatsapp.trim(),
         appointment_date: date,
         appointment_hour: slot.hour,
-        service_name: form.service_name,
-        service_price: form.service_price,
+        service_name: hasDesign ? "Diseño personalizado" : form.service_name,
+        service_price: hasDesign ? null : form.service_price,
+        design_note: designNote || undefined,
+        design_image_url: prefilledDesign?.imageUrl || undefined,
       });
       if (res.success) {
         if (onDesignUsed) onDesignUsed();
@@ -502,40 +507,47 @@ const BookingForm = ({ date, slot, onBack, onSuccess, prefilledDesign, onDesignU
           />
         </div>
 
-        <div className="bc-field">
-          <label className="bc-label">Tipo de servicio</label>
-          <select
-            className="bc-input bc-select"
-            name="service_id"
-            value={form.service_id}
-            onChange={handleChange}
-          >
-            <option value="">Seleccioná un servicio...</option>
-            {Object.entries(
-              services.reduce((acc, s) => {
-                const cat = s.category || 'servicio';
-                if (!acc[cat]) acc[cat] = [];
-                acc[cat].push(s);
-                return acc;
-              }, {})
-            ).map(([cat, items]) => (
-              <optgroup key={cat} label={cat.charAt(0).toUpperCase() + cat.slice(1)}>
-                {items.map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}{s.price ? ` — $${parseInt(s.price).toLocaleString('es-AR')}` : ''}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-          {form.service_price ? (
-            <div className="bc-price-tag">
-              Precio estimado: <strong>${parseInt(form.service_price).toLocaleString("es-AR")}</strong>
-            </div>
-          ) : form.service_id ? (
-            <div className="bc-price-tag">Precio a consultar en el local</div>
-          ) : null}
-        </div>
+        {hasDesign ? (
+          <div className="bc-field">
+            <label className="bc-label">Tipo de servicio</label>
+            <div className="bc-price-tag">✦ Diseño personalizado con IA</div>
+          </div>
+        ) : (
+          <div className="bc-field">
+            <label className="bc-label">Tipo de servicio</label>
+            <select
+              className="bc-input bc-select"
+              name="service_id"
+              value={form.service_id}
+              onChange={handleChange}
+            >
+              <option value="">Seleccioná un servicio...</option>
+              {Object.entries(
+                services.reduce((acc, s) => {
+                  const cat = s.category || 'servicio';
+                  if (!acc[cat]) acc[cat] = [];
+                  acc[cat].push(s);
+                  return acc;
+                }, {})
+              ).map(([cat, items]) => (
+                <optgroup key={cat} label={cat.charAt(0).toUpperCase() + cat.slice(1)}>
+                  {items.map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}{s.price ? ` — $${parseInt(s.price).toLocaleString('es-AR')}` : ''}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            {form.service_price ? (
+              <div className="bc-price-tag">
+                Precio estimado: <strong>${parseInt(form.service_price).toLocaleString("es-AR")}</strong>
+              </div>
+            ) : form.service_id ? (
+              <div className="bc-price-tag">Precio a consultar en el local</div>
+            ) : null}
+          </div>
+        )}
 
         {error && (
           <div className="bc-error fade-in">

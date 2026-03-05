@@ -14,99 +14,108 @@ const genLimiter = rateLimit({
   message: { success: false, error: 'Límite de generaciones alcanzado. Intentá de nuevo en una hora.', remaining: 0 },
 });
 
-// Paleta de colores predefinida
 const COLOR_PROMPTS = {
-  'rosa':         'soft pink, blush, rose tones',
-  'rojo':         'red, deep crimson, cherry red tones',
-  'nude':         'nude, beige, skin tone, natural colors',
-  'lila':         'lilac, lavender, soft purple tones',
-  'blanco':       'white, pearl, ivory, clean tones',
-  'negro':        'black, dark, deep noir tones',
-  'azul':         'blue, cobalt blue, ocean tones',
-  'verde':        'green, mint, sage, emerald tones',
-  'dorado':       'gold, metallic gold, champagne tones',
-  'multicolor':   'each nail painted a different solid color, one color per nail, rainbow set of nails, colorful manicure',
-  'coral':        'coral, peach, warm orange-pink tones',
-  'bordo':        'bordeaux, burgundy, deep wine red tones',
-  'naranja':      'orange, tangerine, warm vibrant orange',
-  'amarillo':     'yellow, sunny yellow, soft lemon tones',
-  'celeste':      'light blue, sky blue, baby blue tones',
-  'azul marino':  'navy blue, dark blue, deep midnight tones',
-  'verde oscuro': 'olive green, dark green, forest green tones',
-  'plateado':     'silver, metallic silver, chrome tones',
-  'rosa chicle':  'hot pink, fuchsia, vivid magenta tones',
-  'terracota':    'terracotta, burnt orange, warm earthy tones',
+  'blanco':       'painted in opaque white gel polish',
+  'nude':         'painted in nude beige gel polish, skin-tone natural finish',
+  'amarillo':     'painted in bright yellow gel polish',
+  'naranja':      'painted in vivid orange gel polish',
+  'terracota':    'painted in terracotta burnt-orange gel polish',
+  'coral':        'painted in coral pink-orange gel polish',
+  'rojo':         'painted in deep red gel polish',
+  'bordo':        'painted in dark burgundy wine-red gel polish',
+  'rosa chicle':  'painted in hot pink fuchsia gel polish',
+  'rosa':         'painted in soft pastel pink gel polish',
+  'lila':         'painted in lilac lavender gel polish',
+  'celeste':      'painted in light sky-blue gel polish',
+  'azul':         'painted in cobalt blue gel polish',
+  'azul marino':  'painted in deep navy blue gel polish',
+  'verde':        'painted in mint green gel polish',
+  'verde oscuro': 'painted in dark olive green gel polish',
+  'dorado':       'painted in metallic gold gel polish',
+  'plateado':     'painted in metallic silver gel polish',
+  'negro':        'painted in matte black gel polish',
+  'multicolor':   'each individual nail painted a completely different solid color: thumb is red, index finger is blue, middle finger is yellow, ring finger is green, pinky is purple — five distinct solid colors, one per nail, no mixing',
 };
 
 const STYLE_PROMPTS = {
-  'minimalista':  'minimalist, clean lines, simple elegant design',
-  'nail art':     'detailed nail art, hand painted design, intricate patterns',
-  'french':       'french manicure, classic french tip, elegant',
-  'glitter':      'glitter, sparkle, shimmer, holographic effect',
-  'flores':       'floral design, flowers, botanical, delicate petals',
-  'geometrico':   'geometric patterns, lines, shapes, modern abstract',
-  'degradado':    'gradient, ombre effect, color fade, blended tones',
-  'marmol':       'marble effect, stone texture, elegant veining',
-  'animal print': 'animal print, leopard spots, zebra stripes, wild pattern',
-  'cromado':      'chrome effect, mirror finish, metallic reflective surface',
+  'solido': (colorStr) =>
+    `${colorStr}, perfectly smooth opaque gel finish, no patterns, no art, pure single color coverage, high gloss shine`,
+
+  'glitter': (colorStr) =>
+    `${colorStr} gel base coat with dense fine glitter particles embedded throughout, ` +
+    `uniform glitter coverage on every nail, small packed glitter flakes, sparkly shimmer, glossy gel top coat over glitter`,
+
+  'french': (colorStr) =>
+    `french manicure style: ${colorStr} gel polish covering the entire nail bed as base, ` +
+    `thin clean white strip painted only on the very tip of each nail, ` +
+    `sharp straight white tip line, classic elegant french manicure`,
+
+  'cat eye': (colorStr) =>
+    `${colorStr} deep dark gel polish base, cat eye magnetic powder effect: ` +
+    `iridescent shifting shimmer concentrated in an oval glow in the center of each nail, ` +
+    `the shimmer fades toward the edges leaving the sides darker, ` +
+    `fine metallic magnetic microparticles catching light, ` +
+    `duochrome iridescent finish that shifts between teal, blue and silver depending on angle, ` +
+    `deep dimensional glow, glossy gel top coat, ` +
+    `the effect looks like light reflecting inside a gemstone`,
 };
 
-const NEGATIVE_PROMPT =
+const buildStylePrompt = (styleId, colorStr) => {
+  const fn = STYLE_PROMPTS[styleId];
+  if (!fn) return colorStr;
+  return fn(colorStr);
+};
+
+const NEGATIVE_PROMPT_BASE =
   'cartoon, illustration, painting, drawing, 3d render, cgi, anime, ' +
-  'ugly nails, broken nails, dirty nails, deformed hands, extra fingers, ' +
-  'blurry, low quality, watermark, text, logo, out of focus, plastic look, fake';
+  'ugly nails, broken nails, dirty nails, deformed hands, extra fingers, missing fingers, ' +
+  'blurry, low quality, watermark, text, logo, out of focus, plastic look, fake nails, acrylic';
 
-const translateToEnglish = async (text) => {
-  if (!text) return null;
-  try {
-    const res = await fetch('https://libretranslate.com/translate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        q: text,
-        source: 'es',
-        target: 'en',
-        format: 'text',
-        api_key: process.env.LIBRETRANSLATE_API_KEY || '', // opcional en la instancia pública
-      }),
-    });
-    const data = await res.json();
-    return data.translatedText || text; // fallback al original si falla
-  } catch {
-    return text; // fallback silencioso
-  }
+const NEGATIVE_PROMPTS = {
+  'solido':  NEGATIVE_PROMPT_BASE + ', glitter, sparkle, patterns, art, french tip, cat eye, gradient',
+  'glitter': NEGATIVE_PROMPT_BASE + ', solid plain nails, french tip, cat eye, matte finish',
+  'french':  NEGATIVE_PROMPT_BASE + ', glitter, sparkle, cat eye, solid color nails, colored tips',
+  'cat eye': NEGATIVE_PROMPT_BASE + ', glitter chunks, scattered glitter flakes, french tip, solid plain nails, matte finish, flat color',
 };
 
-const buildPrompt = (color, style, description) => {
-  const colorStr  = COLOR_PROMPTS[color]  || color  || 'neutral tones';
-  const styleStr  = STYLE_PROMPTS[style]  || style  || 'elegant design';
-  const extraDesc = description ? `, ${description}` : '';
+const buildPrompt = (color, style) => {
+  const colorStr  = COLOR_PROMPTS[color] || 'painted in neutral gel polish';
+  const styleStr  = buildStylePrompt(style, colorStr);
+  const negativePrompt = NEGATIVE_PROMPTS[style] || NEGATIVE_PROMPT_BASE;
 
-  // Prompt más específico: ancla el realismo fotográfico y el contexto de uñas
-  return (
-    `Extreme close-up macro photo of a real woman's hand with a fresh professional manicure, ` +
-    `perfectly shaped oval nails, ${colorStr}, ${styleStr}${extraDesc}, ` +
-    `photographed in a luxury nail salon, soft diffused natural light, ` +
-    `canon 100mm macro lens, tack-sharp nail detail, realistic skin texture, ` +
-    `photorealistic, 8k resolution, professional beauty photography`
-  );
+  const prompt =
+    `Professional beauty photography, extreme close-up macro photo of a woman's hand showing five fingers, ` +
+    `fresh gel manicure on perfectly shaped medium oval nails, ${styleStr}, ` +
+    `shot in a luxury nail salon, soft even studio lighting, no harsh shadows, ` +
+    `Canon 100mm macro lens, razor-sharp nail detail, natural skin texture, ` +
+    `photorealistic, 8k resolution`;
+
+  return { prompt, negativePrompt };
 };
 
 // POST /api/nailgen — público con rate limit
 router.post('/', genLimiter, async (req, res) => {
-  const { color, style, description } = req.body;
+  const { color, style } = req.body;
 
-  const translatedDescription = await translateToEnglish(description);
+  // Validar ANTES de consumir el intento de rate limit
+  if (!color || !style) {
+    return res.status(400).json({ success: false, error: 'Debés elegir un color y un estilo.' });
+  }
+  if (!COLOR_PROMPTS[color]) {
+    return res.status(400).json({ success: false, error: 'Color no válido.' });
+  }
+  if (!STYLE_PROMPTS[style]) {
+    return res.status(400).json({ success: false, error: 'Estilo no válido.' });
+  }
 
   const apiKey = process.env.REPLICATE_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ success: false, error: 'API de generación no configurada.' });
   }
 
-  const prompt = buildPrompt(color, style, translatedDescription);
+  const { prompt, negativePrompt } = buildPrompt(color, style);
 
   try {
-    // flux-dev: más lento que schnell pero notablemente más fotorrealista
     const createRes = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-dev/predictions', {
       method: 'POST',
       headers: {
@@ -117,7 +126,7 @@ router.post('/', genLimiter, async (req, res) => {
       body: JSON.stringify({
         input: {
           prompt,
-          negative_prompt: NEGATIVE_PROMPT,   // flux-dev acepta negative prompt
+          negative_prompt: negativePrompt,
           num_outputs: 1,
           aspect_ratio: '1:1',
           output_format: 'webp',
@@ -132,7 +141,8 @@ router.post('/', genLimiter, async (req, res) => {
 
     if (!createRes.ok) {
       console.error('Replicate error:', prediction);
-      return res.status(500).json({ success: false, error: 'Error al generar el diseño. Intentá de nuevo.' });
+      const remaining = parseInt(res.getHeader('RateLimit-Remaining') ?? '0', 10);
+      return res.status(500).json({ success: false, error: 'Error al generar el diseño. Intentá de nuevo.', remaining: remaining + 1 });
     }
 
     // Con Prefer: wait, si terminó ya tenemos la URL
@@ -159,12 +169,14 @@ router.post('/', genLimiter, async (req, res) => {
         break;
       }
       if (poll.status === 'failed') {
-        return res.status(500).json({ success: false, error: 'Error al generar el diseño. Intentá de nuevo.' });
+        const remaining = parseInt(res.getHeader('RateLimit-Remaining') ?? '0', 10);
+        return res.status(500).json({ success: false, error: 'Error al generar el diseño. Intentá de nuevo.', remaining: remaining + 1 });
       }
     }
 
     if (!imageUrl) {
-      return res.status(504).json({ success: false, error: 'La generación tardó demasiado. Intentá de nuevo.' });
+      const remaining = parseInt(res.getHeader('RateLimit-Remaining') ?? '0', 10);
+      return res.status(504).json({ success: false, error: 'La generación tardó demasiado. Intentá de nuevo.', remaining: remaining + 1 });
     }
 
     const remaining = parseInt(res.getHeader('RateLimit-Remaining') ?? MAX_GENERATIONS, 10);

@@ -29,12 +29,12 @@ const Landing = () => {
         <p className="landing__tagline">
           Arte y cuidado para tus manos.
           <br />
-          Turno online, para más comodidad.
+          Turnos online, para más comodidad.
         </p>
 
         <div className="landing__actions">
           <button className="landing__cta" onClick={() => navigate("/home")}>
-            <span>Sacar turno</span>
+            <span>Ingresar</span>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path
                 d="M3 8H13M13 8L9 4M13 8L9 12"
@@ -43,12 +43,6 @@ const Landing = () => {
                 strokeLinecap="round"
               />
             </svg>
-          </button>
-          <button
-            className="landing__secondary"
-            onClick={() => navigate("/home")}
-          >
-            Ver trabajos
           </button>
         </div>
 

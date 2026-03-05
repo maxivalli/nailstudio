@@ -5,25 +5,25 @@ import "./NailDesignGenerator.css";
 const MAX_GENERATIONS = 3;
 
 const COLORS = [
-  { id: "blanco", label: "Blanco", hex: "#F5F5F0" },
-  { id: "nude", label: "Nude", hex: "#D4B8A0" },
-  { id: "amarillo", label: "Amarillo", hex: "#F0D060" },
-  { id: "naranja", label: "Naranja", hex: "#E8924A" },
-  { id: "terracota", label: "Terracota", hex: "#C46848" },
-  { id: "coral", label: "Coral", hex: "#E8836A" },
-  { id: "rojo", label: "Rojo", hex: "#C0392B" },
-  { id: "bordo", label: "Bordó", hex: "#7B1C2E" },
-  { id: "rosa chicle", label: "Chicle", hex: "#F060A0" },
-  { id: "rosa", label: "Rosa", hex: "#F0C4C4" },
-  { id: "lila", label: "Lila", hex: "#C9B1D9" },
-  { id: "celeste", label: "Celeste", hex: "#A8D4F0" },
-  { id: "azul", label: "Azul", hex: "#6A9FD4" },
-  { id: "azul marino", label: "Marino", hex: "#1B3A5C" },
-  { id: "verde", label: "Verde", hex: "#7DBF8C" },
-  { id: "verde oscuro", label: "Oliva", hex: "#4A6741" },
-  { id: "dorado", label: "Dorado", hex: "#D4AF37" },
-  { id: "plateado", label: "Plata", hex: "#C0C0C8" },
-  { id: "negro", label: "Negro", hex: "#2C2C2C" },
+  { id: "blanco",      label: "Blanco",  hex: "#F5F5F0" },
+  { id: "nude",        label: "Nude",    hex: "#D4B8A0" },
+  { id: "amarillo",    label: "Amarillo",hex: "#F0D060" },
+  { id: "naranja",     label: "Naranja", hex: "#E8924A" },
+  { id: "terracota",   label: "Terracota",hex:"#C46848" },
+  { id: "coral",       label: "Coral",   hex: "#E8836A" },
+  { id: "rojo",        label: "Rojo",    hex: "#C0392B" },
+  { id: "bordo",       label: "Bordó",   hex: "#7B1C2E" },
+  { id: "rosa chicle", label: "Chicle",  hex: "#F060A0" },
+  { id: "rosa",        label: "Rosa",    hex: "#F0C4C4" },
+  { id: "lila",        label: "Lila",    hex: "#C9B1D9" },
+  { id: "celeste",     label: "Celeste", hex: "#A8D4F0" },
+  { id: "azul",        label: "Azul",    hex: "#6A9FD4" },
+  { id: "azul marino", label: "Marino",  hex: "#1B3A5C" },
+  { id: "verde",       label: "Verde",   hex: "#7DBF8C" },
+  { id: "verde oscuro",label: "Oliva",   hex: "#4A6741" },
+  { id: "dorado",      label: "Dorado",  hex: "#D4AF37" },
+  { id: "plateado",    label: "Plata",   hex: "#C0C0C8" },
+  { id: "negro",       label: "Negro",   hex: "#2C2C2C" },
   {
     id: "multicolor",
     label: "Multi",
@@ -31,18 +31,16 @@ const COLORS = [
   },
 ];
 
-const STYLES = [
-  { id: "minimalista", label: "Minimalista", icon: "◯" },
-  { id: "nail art", label: "Nail Art", icon: "✦" },
-  { id: "french", label: "French", icon: "◐" },
-  { id: "glitter", label: "Glitter", icon: "✧" },
-  { id: "flores", label: "Flores", icon: "✿" },
-  { id: "geometrico", label: "Geométrico", icon: "◇" },
-  { id: "degradado", label: "Degradado", icon: "▣" },
-  { id: "marmol", label: "Mármol", icon: "◈" },
-  { id: "animal print", label: "Animal", icon: "⬡" },
-  { id: "cromado", label: "Cromado", icon: "◉" },
+// Estilos que requieren selección de color
+const STYLES_WITH_COLOR = [
+  { id: "solido",  label: "Color sólido", icon: "◉" },
+  { id: "glitter", label: "Glitter",      icon: "✧" },
+  { id: "french",  label: "Francesa",     icon: "◐" },
+  { id: "cat eye", label: "Cat Eye",      icon: "◈" },
 ];
+
+// Todos los estilos (todos requieren color en esta configuración)
+const STYLES = STYLES_WITH_COLOR;
 
 const AttemptsIndicator = ({ remaining }) => {
   const dots = Array.from({ length: MAX_GENERATIONS }, (_, i) => i < remaining);
@@ -68,7 +66,6 @@ const AttemptsIndicator = ({ remaining }) => {
 const NailDesignGenerator = ({ onBookWithDesign }) => {
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedStyle, setSelectedStyle] = useState(null);
-  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -81,12 +78,12 @@ const NailDesignGenerator = ({ onBookWithDesign }) => {
     setLoading(true);
     setError("");
     setResult(null);
-    setRemaining((prev) => Math.max(0, prev - 1)); // descontar al instante, sin esperar al backend
+    setRemaining((prev) => Math.max(0, prev - 1));
 
     const res = await api.generateNailDesign(
       selectedColor,
       selectedStyle,
-      description.trim(),
+      null,
     );
 
     if (res.success) {
@@ -141,20 +138,6 @@ const NailDesignGenerator = ({ onBookWithDesign }) => {
                 </button>
               ))}
             </div>
-          </div>
-
-          {/* Optional description */}
-          <div className="ndg__section">
-            <div className="ndg__section-label">
-              Descripción <span className="ndg__optional">(opcional)</span>
-            </div>
-            <input
-              className="ndg__input"
-              placeholder="Ej: con lunares, estilo verano, piedras brillantes..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value.slice(0, 120))}
-              disabled={loading}
-            />
           </div>
 
           {error && <div className="ndg__error">{error}</div>}
@@ -221,9 +204,6 @@ const NailDesignGenerator = ({ onBookWithDesign }) => {
                   {STYLES.find((s) => s.id === selectedStyle)?.label}
                 </span>
               )}
-              {description && (
-                <span className="ndg__tag ndg__tag--desc">{description}</span>
-              )}
             </div>
           </div>
 
@@ -236,7 +216,6 @@ const NailDesignGenerator = ({ onBookWithDesign }) => {
                 onBookWithDesign({
                   color: COLORS.find((c) => c.id === selectedColor)?.label,
                   style: STYLES.find((s) => s.id === selectedStyle)?.label,
-                  description,
                   imageUrl: result.imageUrl,
                 })
               }

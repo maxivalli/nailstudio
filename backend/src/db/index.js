@@ -65,7 +65,11 @@ export const initDB = async () => {
       -- Permitir precio nulo en servicios
       ALTER TABLE services ALTER COLUMN price DROP NOT NULL;
 
-      -- Servicios por defecto (solo si la tabla está vacía)
+      -- Servicios por defecto (solo si nunca se inicializaron antes)
+      INSERT INTO settings (key, value)
+      VALUES ('services_initialized', 'true')
+      ON CONFLICT (key) DO NOTHING;
+
       INSERT INTO services (name, price, category, sort_order)
       SELECT * FROM (VALUES
         ('Manicuria básica (limado + cutículas + color)', 8000, 'manicuria', 1),
@@ -80,7 +84,7 @@ export const initDB = async () => {
         ('Kapping (refuerzo de uña natural)', 18000, 'esculpidas', 10),
         ('Remoción de esculpidas', 5000, 'esculpidas', 11)
       ) AS v(name, price, category, sort_order)
-      WHERE NOT EXISTS (SELECT 1 FROM services LIMIT 1);
+      WHERE NOT EXISTS (SELECT 1 FROM settings WHERE key = 'services_initialized');
 
       CREATE TABLE IF NOT EXISTS gallery (
         id SERIAL PRIMARY KEY,

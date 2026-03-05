@@ -405,6 +405,59 @@
   color: var(--stone);
 }
 
+.admin-drawer__design-img {
+  display: block;
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--sand);
+  margin-bottom: 1rem;
+  cursor: zoom-in;
+  transition: opacity 0.2s;
+}
+
+.admin-drawer__design-img:hover { opacity: 0.85; }
+
+/* Lightbox */
+.admin-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.admin-lightbox__img {
+  max-width: min(480px, 90vw);
+  max-height: 80vh;
+  border-radius: 12px;
+  object-fit: contain;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+}
+
+.admin-lightbox__close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.admin-lightbox__close:hover { background: rgba(255, 255, 255, 0.28); }
+
 .admin-drawer__actions {
   display: flex;
   align-items: center;

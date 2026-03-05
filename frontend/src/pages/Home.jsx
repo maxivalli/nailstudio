@@ -68,7 +68,7 @@ const Home = () => {
                     <path d="M7.5 1L9.5 5.5L14 6.5L10.5 10L11.5 14.5L7.5 12.5L3.5 14.5L4.5 10L1 6.5L5.5 5.5L7.5 1Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <span>20 colores y 10 estilos</span>
+                <span>Diferentes colores y estilos</span>
               </div>
               <div className="home-feature">
                 <div className="home-feature__icon">
