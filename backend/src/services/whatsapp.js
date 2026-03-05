@@ -149,7 +149,7 @@ export const sendReminder = async (appointment) => {
 
 Hola ${appointment.name}!
 
-Te recordamos tu turno de mañana:
+Te recordamos tu turno de hoy:
 📅 ${formatDate(appointment.appointment_date)}
 🕐 ${appointment.appointment_hour}:00 – ${appointment.appointment_hour + 2}:00 hs (2 horas)
 

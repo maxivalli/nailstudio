@@ -11,6 +11,15 @@ export const getSSEUrl = () => {
     : '/api/events';
 };
 
+// SSE admin: EventSource no soporta headers, el token va como query param
+export const getAdminSSEUrl = () => {
+  const token = localStorage.getItem('admin_token');
+  const base = import.meta.env.VITE_API_URL
+    ? `${import.meta.env.VITE_API_URL}/api/events/admin`
+    : '/api/events/admin';
+  return token ? `${base}?token=${encodeURIComponent(token)}` : null;
+};
+
 // Helper para obtener token
 const getToken = () => localStorage.getItem('admin_token');
 

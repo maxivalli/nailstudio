@@ -16,7 +16,7 @@ const ADMIN_CREDENTIALS = {
   username: process.env.ADMIN_USERNAME || 'admin',
   password: ADMIN_PASSWORD,
 };
-const JWT_EXPIRES_IN = '7d';
+const JWT_EXPIRES_IN = '12h';
 
 export const login = async (req, res) => {
   const { username, password } = req.body;
@@ -90,5 +90,24 @@ export const authMiddleware = async (req, res, next) => {
       success: false,
       error: 'Token inválido o expirado'
     });
+  }
+};
+
+// Middleware especial para SSE: EventSource del browser no soporta headers,
+// así que el token se pasa como query param ?token=...
+export const authMiddlewareSSE = async (req, res, next) => {
+  const token = req.query.token;
+
+  if (!token) {
+    res.status(401).end('No autorizado');
+    return;
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(401).end('Token inválido o expirado');
   }
 };

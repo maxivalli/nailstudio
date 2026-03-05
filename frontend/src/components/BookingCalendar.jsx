@@ -379,7 +379,9 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
         service_price: form.service_price,
       });
       if (res.success) {
-        onSuccess(res.data);
+        // El servidor ya no devuelve whatsapp por seguridad — lo agregamos desde el form
+        // ya que el cliente lo ingresó y tiene derecho a verlo en la confirmación
+        onSuccess({ ...res.data, whatsapp: form.whatsapp.trim() });
       } else {
         setError(res.error || "Ocurrió un error");
       }

@@ -1,12 +1,14 @@
 import { pool } from '../db/index.js';
-import { broadcast, sseClients } from '../index.js';
+import { broadcast, broadcastPublic } from '../index.js';
 import { sendClientConfirmation, sendAdminNotification } from '../services/whatsapp.js';
 
 // Get confirmed appointments for a date range (calendar view)
 export const getAppointments = async (req, res) => {
   try {
     const { from, to } = req.query;
-    let query = `SELECT id, name, appointment_date, appointment_hour, status FROM appointments WHERE status = 'confirmed'`;
+    // SEGURIDAD: la ruta pública solo expone fecha/hora para mostrar disponibilidad,
+    // no el nombre del cliente.
+    let query = `SELECT id, appointment_date, appointment_hour, status FROM appointments WHERE status = 'confirmed'`;
     const params = [];
     if (from && to) {
       params.push(from, to);
@@ -139,6 +141,7 @@ export const createAppointment = async (req, res) => {
 
     const { whatsapp: _w, ...publicAppt } = appointment;
     broadcast('calendar_update', { type: 'new', appointment: publicAppt });
+    broadcastPublic('calendar_update'); // notifica al calendario público sin datos personales
 
     // Enviar WhatsApp en segundo plano
     setImmediate(async () => {
@@ -150,7 +153,8 @@ export const createAppointment = async (req, res) => {
       }
     });
 
-    res.status(201).json({ success: true, data: appointment });
+    // SEGURIDAD: nunca devolver whatsapp al cliente en la respuesta HTTP
+    res.status(201).json({ success: true, data: publicAppt });
   } catch (err) {
     if (err.code === '23505') {
       return res.status(409).json({ success: false, error: 'Ese horario ya fue reservado. Elegí otro.' });
@@ -175,7 +179,9 @@ export const updateAppointmentStatus = async (req, res) => {
     if (!result.rows.length) return res.status(404).json({ success: false, error: 'No encontrado' });
     const { whatsapp: _w2, ...publicAppt2 } = result.rows[0];
     broadcast('calendar_update', { type: 'status_change', appointment: publicAppt2 });
-    res.json({ success: true, data: result.rows[0] });
+    broadcastPublic('calendar_update');
+    // SEGURIDAD: usar publicAppt2 (sin whatsapp) en la respuesta
+    res.json({ success: true, data: publicAppt2 });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -187,6 +193,7 @@ export const deleteAppointment = async (req, res) => {
   try {
     await pool.query(`DELETE FROM appointments WHERE id = $1`, [id]);
     broadcast('calendar_update', { type: 'deleted', id: parseInt(id) });
+    broadcastPublic('calendar_update');
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

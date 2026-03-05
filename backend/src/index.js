@@ -9,7 +9,7 @@ import chatRouter from './routes/chat.js';
 import servicesRouter from './routes/services.js';
 import authRouter from './routes/auth.js';
 import { initWhatsApp, getWhatsAppInfo } from './services/whatsapp.js';
-import { authMiddleware } from './controllers/auth.js';
+import { authMiddleware, authMiddlewareSSE } from './controllers/auth.js';
 import { initScheduler } from './services/scheduler.js';
 import { generalLimiter, loginLimiter } from './middleware/rateLimits.js';
 
@@ -27,11 +27,9 @@ process.on('unhandledRejection', (reason) => {
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const SSE_MAX_CLIENTS = 100;
 
 app.set('trust proxy', 1);
-
-// SSE clients store
-export const sseClients = new Set();
 
 // ─── Security middleware ──────────────────────────────────────────────────────
 app.use(helmet());
@@ -39,11 +37,13 @@ app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
 app.use(express.json({ limit: '10kb' }));
 app.use('/api/', generalLimiter);
 
-// SSE endpoint for real-time updates
-const SSE_MAX_CLIENTS = 100;
+// ─── SSE clients — separados por tipo ────────────────────────────────────────
+export const ssePublicClients = new Set(); // calendario público (solo señal de cambio)
+export const sseAdminClients = new Set();  // panel admin (eventos completos, requiere auth)
 
+// SSE público — sin auth, solo dispara recarga de disponibilidad
 app.get('/api/events', (req, res) => {
-  if (sseClients.size >= SSE_MAX_CLIENTS) {
+  if (ssePublicClients.size >= SSE_MAX_CLIENTS) {
     return res.status(503).json({ error: 'Demasiadas conexiones activas.' });
   }
 
@@ -52,26 +52,54 @@ app.get('/api/events', (req, res) => {
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders();
 
-  sseClients.add(res);
-
-  req.on('close', () => {
-    sseClients.delete(res);
-  });
+  ssePublicClients.add(res);
+  req.on('close', () => ssePublicClients.delete(res));
 });
 
-// Helper to broadcast to all SSE clients
+// SSE admin — requiere token JWT como query param (?token=...)
+// EventSource del browser no soporta headers custom
+app.get('/api/events/admin', authMiddlewareSSE, (req, res) => {
+  if (sseAdminClients.size >= SSE_MAX_CLIENTS) {
+    return res.status(503).json({ error: 'Demasiadas conexiones activas.' });
+  }
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  sseAdminClients.add(res);
+  req.on('close', () => sseAdminClients.delete(res));
+});
+
+// ─── Broadcast helpers ────────────────────────────────────────────────────────
+
+// Broadcast a admins: datos completos del turno
 export const broadcast = (event, data) => {
   const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-  sseClients.forEach(client => {
+  sseAdminClients.forEach(client => {
     try {
       client.write(message);
     } catch (err) {
-      console.error('Error escribiendo a cliente SSE:', err);
-      sseClients.delete(client);
+      console.error('Error escribiendo a cliente SSE admin:', err);
+      sseAdminClients.delete(client);
     }
   });
 };
 
+// Broadcast público: solo señal de "hubo un cambio", sin datos personales
+export const broadcastPublic = (event) => {
+  const message = `event: ${event}\ndata: {}\n\n`;
+  ssePublicClients.forEach(client => {
+    try {
+      client.write(message);
+    } catch (err) {
+      ssePublicClients.delete(client);
+    }
+  });
+};
+
+// ─── Rutas ────────────────────────────────────────────────────────────────────
 app.use('/api/auth', loginLimiter, authRouter);
 app.use('/api/appointments', appointmentsRouter);
 app.use('/api/gallery', galleryRouter);
@@ -80,12 +108,12 @@ app.use('/api/services', servicesRouter);
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 
-// WhatsApp status endpoint
 app.get('/api/whatsapp/status', authMiddleware, async (_, res) => {
   const info = await getWhatsAppInfo();
   res.json(info || { ready: false, provider: 'Evolution API' });
 });
 
+// ─── Arranque ─────────────────────────────────────────────────────────────────
 const start = async () => {
   await initDB();
   initWhatsApp();

@@ -3,7 +3,7 @@ import { pool } from '../db/index.js';
 import { sendReminder, isWhatsAppReady } from './whatsapp.js';
 
 // Corre todos los días a las 9:00 hora Argentina
-const CRON_EXPRESSION = '0 9 * * *';
+const CRON_EXPRESSION = '0 8 * * *';
 
 const sendDailyReminders = async () => {
   if (!isWhatsAppReady()) {

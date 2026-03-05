@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { api, getSSEUrl } from "../api";
+import { api, getAdminSSEUrl } from "../api";
 import "./AdminPanel.css";
 
 const HOURS = [8, 10, 12, 14, 16, 18]; // Turnos de 2 horas
@@ -124,7 +124,9 @@ const AdminPanel = ({ onClose }) => {
     let retryTimeout;
 
     const connect = () => {
-      es = new EventSource(getSSEUrl());
+      const sseUrl = getAdminSSEUrl();
+      if (!sseUrl) return; // sin token, no conectar
+      es = new EventSource(sseUrl);
       es.addEventListener("calendar_update", fetchAll);
       es.onerror = () => {
         es.close();
