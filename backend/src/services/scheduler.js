@@ -2,10 +2,12 @@ import cron from 'node-cron';
 import { pool } from '../db/index.js';
 import { sendReminder, isWhatsAppReady } from './whatsapp.js';
 
-// Corre todos los días a las 9:00 hora Argentina
-const CRON_EXPRESSION = '0 8 * * *';
+// 7:00 — solo turno de las 8:00
+const CRON_EARLY = '0 7 * * *';
+// 9:00 — resto de los turnos (10:00 en adelante)
+const CRON_MAIN  = '0 9 * * *';
 
-const sendDailyReminders = async () => {
+const sendReminders = async (onlyHour = null) => {
   if (!isWhatsAppReady()) {
     console.log('[Scheduler] WhatsApp no está listo, se omiten recordatorios.');
     return;
@@ -15,17 +17,19 @@ const sendDailyReminders = async () => {
     timeZone: 'America/Argentina/Buenos_Aires',
   });
 
-  console.log(`[Scheduler] Buscando turnos para hoy: ${today}`);
+  console.log(`[Scheduler] Buscando turnos para hoy: ${today}${onlyHour !== null ? ` (solo hora ${onlyHour}:00)` : ' (hora 10:00 en adelante)'}`);
 
   try {
-    // Solo trae turnos que NO tengan reminder_sent = true — previene duplicados
+    // reminder_sent = false previene duplicados si el cron corre dos veces
     const result = await pool.query(
       `SELECT * FROM appointments
        WHERE appointment_date = $1
          AND status = 'confirmed'
          AND reminder_sent = false
+         AND ($2::int IS NULL     AND appointment_hour > 8
+              OR $2::int IS NOT NULL AND appointment_hour = $2)
        ORDER BY appointment_hour ASC`,
-      [today]
+      [today, onlyHour]
     );
 
     const appointments = result.rows;
@@ -41,7 +45,6 @@ const sendDailyReminders = async () => {
       const result = await sendReminder(appt);
 
       if (result.success) {
-        // Marcar como enviado inmediatamente — si el server cae después, no se reenvía
         await pool.query(
           `UPDATE appointments SET reminder_sent = true WHERE id = $1`,
           [appt.id]
@@ -61,11 +64,17 @@ const sendDailyReminders = async () => {
 };
 
 export const initScheduler = () => {
-  cron.schedule(CRON_EXPRESSION, sendDailyReminders, {
+  // 7:00 — solo avisa a la clienta del turno de las 8:00
+  cron.schedule(CRON_EARLY, () => sendReminders(8), {
     timezone: 'America/Argentina/Buenos_Aires',
   });
 
-  console.log('📅 Scheduler activo — recordatorios a las 9:00 (hora Argentina)');
+  // 9:00 — avisa al resto (turnos de 10:00 en adelante)
+  cron.schedule(CRON_MAIN, () => sendReminders(null), {
+    timezone: 'America/Argentina/Buenos_Aires',
+  });
+
+  console.log('📅 Scheduler activo — 7:00 (turno 8:00) y 9:00 (resto) hora Argentina');
 };
 
 export default { initScheduler };
