@@ -89,6 +89,21 @@ export const initDB = async () => {
         category VARCHAR(50) DEFAULT 'general',
         created_at TIMESTAMP DEFAULT NOW()
       );
+
+      -- Tabla de configuración global del negocio
+      CREATE TABLE IF NOT EXISTS settings (
+        key VARCHAR(100) PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+
+      INSERT INTO settings (key, value)
+      VALUES ('maintenance_mode', 'false')
+      ON CONFLICT (key) DO NOTHING;
+
+      INSERT INTO settings (key, value)
+      VALUES ('maintenance_message', 'Estamos de vacaciones 🌴 Volvemos pronto. ¡Gracias por tu paciencia!')
+      ON CONFLICT (key) DO NOTHING;
     `);
   } catch (err) {
     console.error('Error inicializando base de datos:', err.message);

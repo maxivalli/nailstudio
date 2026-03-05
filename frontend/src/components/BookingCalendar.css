@@ -635,3 +635,34 @@
 .bc-price-tag strong {
   color: var(--espresso);
 }
+/* ── Maintenance screen ─────────────────────────────────────────────────────── */
+.bc-maintenance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  gap: 0.75rem;
+  min-height: 280px;
+}
+
+.bc-maintenance__icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.bc-maintenance__title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--espresso);
+}
+
+.bc-maintenance__msg {
+  font-size: 14px;
+  color: var(--stone);
+  line-height: 1.6;
+  max-width: 280px;
+  margin: 0;
+}

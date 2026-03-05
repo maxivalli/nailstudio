@@ -135,4 +135,12 @@ export const api = {
     method: 'DELETE',
     headers: authHeaders(),
   }),
+
+  // Maintenance mode
+  getMaintenance: () => safeFetch(`${BASE}/settings/maintenance`),
+  setMaintenance: (active, message) => safeFetch(`${BASE}/settings/maintenance`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify({ active, message }),
+  }),
 };

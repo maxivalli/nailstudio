@@ -64,6 +64,11 @@ const AdminPanel = ({ onClose }) => {
   });
   const [savingService, setSavingService] = useState(false);
 
+  // Maintenance mode state
+  const [maintenance, setMaintenance] = useState({ active: false, message: '' });
+  const [savingMaintenance, setSavingMaintenance] = useState(false);
+  const [maintenanceMsg, setMaintenanceMsg] = useState('');
+
   // Analytics state
   const [serviceStats, setServiceStats] = useState([]);
   const [frequentClients, setFrequentClients] = useState([]);
@@ -77,9 +82,33 @@ const AdminPanel = ({ onClose }) => {
     if (res.success) setServices(res.data);
   }, []);
 
+  const fetchMaintenance = useCallback(async () => {
+    const res = await api.getMaintenance();
+    if (res.success) {
+      setMaintenance(res.data);
+      setMaintenanceMsg(res.data.message);
+    }
+  }, []);
+
   useEffect(() => {
     fetchServices();
-  }, [fetchServices]);
+    fetchMaintenance();
+  }, [fetchServices, fetchMaintenance]);
+
+  const handleToggleMaintenance = async () => {
+    setSavingMaintenance(true);
+    const newActive = !maintenance.active;
+    const res = await api.setMaintenance(newActive, maintenanceMsg);
+    if (res.success) setMaintenance(m => ({ ...m, active: newActive }));
+    setSavingMaintenance(false);
+  };
+
+  const handleSaveMaintenanceMessage = async () => {
+    setSavingMaintenance(true);
+    const res = await api.setMaintenance(maintenance.active, maintenanceMsg);
+    if (res.success) setMaintenance(m => ({ ...m, message: maintenanceMsg }));
+    setSavingMaintenance(false);
+  };
 
   const handleSaveService = async () => {
     if (!newService.name) return;
@@ -314,6 +343,12 @@ const AdminPanel = ({ onClose }) => {
               onClick={() => { setActiveTab("estadisticas"); loadAnalytics(); }}
             >
               Estadísticas
+            </button>
+            <button
+              className={`admin-tab ${activeTab === "mantenimiento" ? "admin-tab--active" : ""} ${maintenance.active ? "admin-tab--alert" : ""}`}
+              onClick={() => setActiveTab("mantenimiento")}
+            >
+              {maintenance.active ? "🔴 Mantenimiento" : "Mantenimiento"}
             </button>
           </div>
 
@@ -699,6 +734,67 @@ const AdminPanel = ({ onClose }) => {
               )}
             </>
           )}
+
+          {activeTab === "mantenimiento" && (
+            <div className="admin-maintenance">
+              {/* Toggle principal */}
+              <div className={`admin-maintenance__card ${maintenance.active ? "admin-maintenance__card--active" : ""}`}>
+                <div className="admin-maintenance__card-info">
+                  <div className="admin-maintenance__card-title">
+                    {maintenance.active ? "🔴 Reservas desactivadas" : "✅ Reservas activas"}
+                  </div>
+                  <div className="admin-maintenance__card-sub">
+                    {maintenance.active
+                      ? "Las clientas ven el mensaje de mantenimiento y no pueden reservar."
+                      : "El calendario está abierto y las clientas pueden reservar normalmente."}
+                  </div>
+                </div>
+                <button
+                  className={`admin-maintenance__toggle ${maintenance.active ? "admin-maintenance__toggle--on" : ""}`}
+                  onClick={handleToggleMaintenance}
+                  disabled={savingMaintenance}
+                >
+                  <span className="admin-maintenance__toggle-knob" />
+                </button>
+              </div>
+
+              {/* Mensaje personalizable */}
+              <div className="admin-maintenance__section">
+                <label className="admin-maintenance__label">
+                  Mensaje que verán las clientas
+                </label>
+                <textarea
+                  className="admin-maintenance__textarea"
+                  value={maintenanceMsg}
+                  onChange={(e) => setMaintenanceMsg(e.target.value.slice(0, 300))}
+                  placeholder="Ej: Estamos de vacaciones 🌴 Volvemos el 15 de enero."
+                  rows={3}
+                />
+                <div className="admin-maintenance__footer">
+                  <span className="admin-maintenance__chars">{maintenanceMsg.length}/300</span>
+                  <button
+                    className="admin-btn admin-btn--done"
+                    onClick={handleSaveMaintenanceMessage}
+                    disabled={savingMaintenance || maintenanceMsg === maintenance.message}
+                  >
+                    {savingMaintenance ? "Guardando..." : "Guardar mensaje"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Preview */}
+              {maintenanceMsg && (
+                <div className="admin-maintenance__preview">
+                  <div className="admin-maintenance__preview-label">Vista previa</div>
+                  <div className="admin-maintenance__preview-box">
+                    <div className="admin-maintenance__preview-icon">🌙</div>
+                    <p className="admin-maintenance__preview-text">{maintenanceMsg}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
 
         {/* Detail drawer */}

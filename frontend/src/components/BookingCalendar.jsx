@@ -653,7 +653,15 @@ const BookingCalendar = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [confirmedAppt, setConfirmedAppt] = useState(null);
   const [appointments, setAppointments] = useState([]);
-  const [refreshTrigger, setRefreshTrigger] = useState(0); // Trigger para forzar recarga
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [maintenance, setMaintenance] = useState({ active: false, message: '' });
+
+  // Verificar modo mantenimiento al montar
+  useEffect(() => {
+    api.getMaintenance().then(res => {
+      if (res.success) setMaintenance(res.data);
+    });
+  }, []);
 
   // Fetch appointments for visible range (for the dots on the calendar)
   const fetchAppointments = useCallback(() => {
@@ -748,6 +756,17 @@ const BookingCalendar = () => {
 
   return (
     <div className="booking-calendar">
+      {/* Modo mantenimiento */}
+      {maintenance.active && (
+        <div className="bc-maintenance fade-in">
+          <div className="bc-maintenance__icon">🌙</div>
+          <div className="bc-maintenance__title">Reservas pausadas</div>
+          <p className="bc-maintenance__msg">{maintenance.message}</p>
+        </div>
+      )}
+
+      {!maintenance.active && (
+        <>
       <div className="bc-header">
         <div className="bc-header__eyebrow">Reservá tu turno</div>
         <h3 className="bc-header__title">
@@ -802,6 +821,8 @@ const BookingCalendar = () => {
           <Confirmation appointment={confirmedAppt} onReset={handleReset} />
         )}
       </div>
+      </>
+      )}
     </div>
   );
 };
