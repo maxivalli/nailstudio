@@ -553,6 +553,22 @@ const AdminPanel = ({ onClose }) => {
             <>
               {/* Week grid view */}
               {view === "week" && (
+                <div className="admin-week-nav">
+                  <button className="admin-week-nav__btn" onClick={() => setWeekStart(addDays(weekStart, -7))}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                  <span className="admin-week-nav__label">{weekLabel()}</span>
+                  <button className="admin-week-nav__btn" onClick={() => setWeekStart(addDays(weekStart, 7))}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+              )}
+
+              {view === "week" && (
                 <div className="admin-grid">
                   {/* Column headers */}
                   <div className="admin-grid__corner" />

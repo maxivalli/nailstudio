@@ -853,3 +853,41 @@ body.admin-is-open {
 .admin-analytics__history-item--cancelled .admin-analytics__history-status {
   color: #b07070;
 }
+
+/* ── Week navigation ───────────────────────────────────────────────────────── */
+.admin-week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--sand);
+  background: var(--white);
+  position: sticky;
+  top: 48px;
+  z-index: 9;
+}
+
+.admin-week-nav__label {
+  font-size: 13px;
+  color: var(--espresso);
+  font-weight: 500;
+}
+
+.admin-week-nav__btn {
+  background: none;
+  border: 1px solid var(--sand);
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--stone);
+  transition: background 0.15s, color 0.15s;
+}
+
+.admin-week-nav__btn:hover {
+  background: var(--cream);
+  color: var(--espresso);
+}
