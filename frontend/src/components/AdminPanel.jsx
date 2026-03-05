@@ -86,7 +86,7 @@ const AdminPanel = ({ onClose }) => {
     setSavingService(true);
     await api.createService({
       ...newService,
-      price: newService.price !== "" && newService.price !== null ? parseInt(newService.price) : null,
+      price: newService.price ? parseInt(newService.price) : 0,
     });
     setNewService({ name: "", price: "", category: "manicuria" });
     await fetchServices();
@@ -94,13 +94,7 @@ const AdminPanel = ({ onClose }) => {
   };
 
   const handleUpdateService = async (id, data) => {
-    const normalized = {
-      ...data,
-      price: data.price !== "" && data.price !== null && data.price !== undefined
-        ? parseInt(data.price) || null
-        : null,
-    };
-    await api.updateService(id, normalized);
+    await api.updateService(id, data);
     setEditingService(null);
     await fetchServices();
   };
@@ -730,6 +724,11 @@ const AdminPanel = ({ onClose }) => {
               <span>{selectedAppt.whatsapp}</span>
               {selectedAppt.service_name && (
                 <span className="admin-drawer__service">💅 {selectedAppt.service_name}</span>
+              )}
+              {selectedAppt.service_price && parseInt(selectedAppt.service_price) > 0 && (
+                <span className="admin-drawer__service">
+                  💰 ${parseInt(selectedAppt.service_price).toLocaleString('es-AR')}
+                </span>
               )}
               <span>
                 {(() => {

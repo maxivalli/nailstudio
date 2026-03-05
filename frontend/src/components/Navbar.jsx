@@ -30,7 +30,10 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
   // Consultar estado de WhatsApp cuando el admin abre el menú
   useEffect(() => {
     if (isAuthenticated && showMenu) {
-      fetch(`${API_URL}/api/whatsapp/status`)
+      const token = localStorage.getItem('admin_token');
+      fetch(`${API_URL}/api/whatsapp/status`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
         .then(r => r.json())
         .then(data => setWaStatus(data?.ready === true))
         .catch(() => setWaStatus(false));
