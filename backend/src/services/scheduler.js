@@ -26,8 +26,11 @@ const sendReminders = async (onlyHour = null) => {
        WHERE appointment_date = $1
          AND status = 'confirmed'
          AND reminder_sent = false
-         AND ($2::int IS NULL     AND appointment_hour > 8
-              OR $2::int IS NOT NULL AND appointment_hour = $2)
+         AND (
+               ($2::int IS NULL     AND appointment_hour > 8)
+               OR
+               ($2::int IS NOT NULL AND appointment_hour = $2)
+             )
        ORDER BY appointment_hour ASC`,
       [today, onlyHour]
     );

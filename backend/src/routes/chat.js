@@ -26,7 +26,8 @@ const buildSystemPrompt = async () => {
   const byCategory = result.rows.reduce((acc, s) => {
     const cat = s.category || 'servicio';
     if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(`- ${s.name}: $${s.price.toLocaleString('es-AR')}`);
+    const priceStr = s.price != null ? `$${Number(s.price).toLocaleString('es-AR')}` : 'Consultar precio';
+    acc[cat].push(`- ${s.name}: ${priceStr}`);
     return acc;
   }, {});
 
@@ -50,7 +51,7 @@ TURNOS: Se sacan desde la web, en la sección "Sacar turno".
 UBICACIÓN: San Cristóbal, Santa Fe, Argentina. La dirección exacta se confirma al sacar el turno.
 WHATSAPP: +5493408680476
 
-Si te preguntan algo que no sabés, decí amablemente que pueden escribir por Instagram o WhatsApp.
+Si te preguntan algo que no sabés, decí amablemente que pueden escribir por Instagram o WhatsApp y proporcionar los links directos.
 No inventes precios ni servicios que no estén en la lista.`;
 
   promptCache = prompt;

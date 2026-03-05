@@ -125,25 +125,34 @@ const AdminPanel = ({ onClose }) => {
 
     const connect = () => {
       const sseUrl = getAdminSSEUrl();
-      if (!sseUrl) return; // sin token, no conectar
+      // Si no hay token (sesión expirada o logout), no reintentar
+      if (!sseUrl) return;
       es = new EventSource(sseUrl);
-      es.addEventListener("calendar_update", fetchAll);
+      es.addEventListener("calendar_update", (e) => {
+        fetchAll();
+        // Invalidar analytics para que se refresquen la próxima vez que se abra el tab
+        setServiceStats([]);
+        setFrequentClients([]);
+      });
       es.onerror = () => {
         es.close();
-        retryTimeout = setTimeout(connect, 5000);
+        // Solo reintentar si aún hay token válido
+        if (getAdminSSEUrl()) {
+          retryTimeout = setTimeout(connect, 5000);
+        }
       };
     };
 
     connect();
 
     return () => {
-      es.close();
+      if (es) es.close();
       clearTimeout(retryTimeout);
     };
   }, [fetchAll]);
 
   const loadAnalytics = useCallback(async () => {
-    if (serviceStats.length > 0) return;
+    // Siempre recarga al abrir el tab (los datos se invalidan via SSE calendar_update)
     setLoadingAnalytics(true);
     try {
       const [svc, clients] = await Promise.all([
@@ -155,7 +164,7 @@ const AdminPanel = ({ onClose }) => {
     } finally {
       setLoadingAnalytics(false);
     }
-  }, [serviceStats.length]);
+  }, []);
 
   const searchClient = async () => {
     if (!clientSearch.trim()) return;

@@ -106,7 +106,7 @@ export const api = {
   getFrequentClients: () => fetch(`${BASE}/appointments/analytics/clients`, {
     headers: authHeaders(),
   }).then(r => r.json()),
-  getClientHistory: (whatsapp) => fetch(`${BASE}/appointments/analytics/client/${whatsapp}`, {
+  getClientHistory: (whatsapp) => fetch(`${BASE}/appointments/analytics/client/${encodeURIComponent(whatsapp)}`, {
     headers: authHeaders(),
   }).then(r => r.json()),
 

@@ -10,7 +10,11 @@ export const getAppointments = async (req, res) => {
     // no el nombre del cliente.
     let query = `SELECT id, appointment_date, appointment_hour, status FROM appointments WHERE status = 'confirmed'`;
     const params = [];
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (from && to) {
+      if (!dateRegex.test(from) || !dateRegex.test(to)) {
+        return res.status(400).json({ success: false, error: 'Formato de fecha inválido.' });
+      }
       params.push(from, to);
       query += ` AND appointment_date BETWEEN $1 AND $2`;
     }
@@ -130,6 +134,17 @@ export const createAppointment = async (req, res) => {
     return res.status(400).json({ success: false, error: 'Horario inválido. Los turnos son de 2 horas: 8:00, 10:00, 12:00, 14:00, 16:00 o 18:00' });
   }
 
+  // Validar que la fecha no sea en el pasado, y si es hoy que la hora no haya pasado ya
+  const argentinaTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+  const todayArg = new Date(argentinaTime.getFullYear(), argentinaTime.getMonth(), argentinaTime.getDate());
+  const requestedDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  if (requestedDay < todayArg) {
+    return res.status(400).json({ success: false, error: 'No podés reservar en una fecha pasada.' });
+  }
+  if (requestedDay.getTime() === todayArg.getTime() && hour <= argentinaTime.getHours()) {
+    return res.status(400).json({ success: false, error: 'Ese horario ya pasó. Elegí otro turno.' });
+  }
+
   try {
     const result = await pool.query(
       `INSERT INTO appointments (name, whatsapp, appointment_date, appointment_hour, status, service_name, service_price)
@@ -191,12 +206,15 @@ export const updateAppointmentStatus = async (req, res) => {
 export const deleteAppointment = async (req, res) => {
   const { id } = req.params;
   try {
-    await pool.query(`DELETE FROM appointments WHERE id = $1`, [id]);
+    const result = await pool.query(`DELETE FROM appointments WHERE id = $1`, [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, error: 'Turno no encontrado.' });
+    }
     broadcast('calendar_update', { type: 'deleted', id: parseInt(id) });
     broadcastPublic('calendar_update');
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Error interno del servidor.' });
   }
 };
 
