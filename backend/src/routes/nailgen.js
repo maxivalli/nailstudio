@@ -130,9 +130,9 @@ router.post('/', genLimiter, async (req, res) => {
           num_outputs: 1,
           aspect_ratio: '1:1',
           output_format: 'webp',
-          output_quality: 95,                  // subimos de 90 → 95
-          num_inference_steps: 28,             // schnell usaba 4; dev necesita 25-50
-          guidance_scale: 3.5,                 // valor recomendado para flux-dev
+          output_quality: 95,
+          num_inference_steps: 20,
+          guidance_scale: 3.5,
         },
       }),
     });
@@ -151,10 +151,10 @@ router.post('/', genLimiter, async (req, res) => {
       return res.json({ success: true, imageUrl: prediction.output[0], prompt, remaining });
     }
 
-    // Polling — flux-dev puede tardar más que schnell
+    // Polling — flux-dev puede tardar entre 20-40s
     const predictionId = prediction.id;
     let imageUrl = null;
-    const maxAttempts = 40;          // más intentos para cubrir el tiempo extra
+    const maxAttempts = 40;  // 40 × 2s = 80s máximo
 
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise(r => setTimeout(r, 2000));  // 2s entre polls
