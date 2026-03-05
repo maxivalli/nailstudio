@@ -221,13 +221,16 @@ export const deleteAppointment = async (req, res) => {
 // Stats for admin
 export const getStats = async (req, res) => {
   try {
+    const todayArg = new Date().toLocaleDateString('en-CA', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+    }); // formato YYYY-MM-DD en hora Argentina
     const result = await pool.query(`
       SELECT
-        COUNT(*) FILTER (WHERE status='confirmed' AND appointment_date = CURRENT_DATE) AS today_confirmed,
-        COUNT(*) FILTER (WHERE status='confirmed' AND appointment_date > CURRENT_DATE) AS upcoming,
+        COUNT(*) FILTER (WHERE status='confirmed' AND appointment_date = $1::date) AS today_confirmed,
+        COUNT(*) FILTER (WHERE status='confirmed' AND appointment_date > $1::date) AS upcoming,
         COUNT(*) FILTER (WHERE status='completed') AS total_completed
       FROM appointments
-    `);
+    `, [todayArg]);
     const row = result.rows[0];
     res.json({ success: true, data: {
       today_confirmed: parseInt(row.today_confirmed),

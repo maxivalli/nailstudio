@@ -626,7 +626,7 @@ const Confirmation = ({ appointment, onReset }) => {
             <strong>{appointment.service_name}</strong>
           </div>
         )}
-        {appointment.service_price && (
+        {appointment.service_price && parseInt(appointment.service_price) > 0 && (
           <div className="bc-confirm__row">
             <span>Precio</span>
             <strong>${parseInt(appointment.service_price).toLocaleString("es-AR")}</strong>

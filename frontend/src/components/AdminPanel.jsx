@@ -86,7 +86,7 @@ const AdminPanel = ({ onClose }) => {
     setSavingService(true);
     await api.createService({
       ...newService,
-      price: newService.price ? parseInt(newService.price) : 0,
+      price: newService.price !== "" && newService.price !== null ? parseInt(newService.price) : null,
     });
     setNewService({ name: "", price: "", category: "manicuria" });
     await fetchServices();
@@ -94,7 +94,13 @@ const AdminPanel = ({ onClose }) => {
   };
 
   const handleUpdateService = async (id, data) => {
-    await api.updateService(id, data);
+    const normalized = {
+      ...data,
+      price: data.price !== "" && data.price !== null && data.price !== undefined
+        ? parseInt(data.price) || null
+        : null,
+    };
+    await api.updateService(id, normalized);
     setEditingService(null);
     await fetchServices();
   };

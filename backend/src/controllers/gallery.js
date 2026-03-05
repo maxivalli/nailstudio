@@ -1,5 +1,5 @@
 import { pool } from '../db/index.js';
-import { broadcast } from '../index.js';
+import { broadcast, broadcastPublic } from '../index.js';
 
 export const getGallery = async (req, res) => {
   try {
@@ -36,6 +36,7 @@ export const addGalleryItem = async (req, res) => {
     );
 
     broadcast('gallery_update', { type: 'new', item: result.rows[0] });
+    broadcastPublic('gallery_update');
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (err) {
     console.error('Error agregando imagen a galería:', err);
@@ -58,6 +59,7 @@ export const updateGalleryItem = async (req, res) => {
     }
 
     broadcast('gallery_update', { type: 'updated', item: result.rows[0] });
+    broadcastPublic('gallery_update');
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     console.error('Error actualizando imagen de galería:', err);
@@ -76,6 +78,7 @@ export const deleteGalleryItem = async (req, res) => {
     }
 
     broadcast('gallery_update', { type: 'deleted', id: parseInt(id) });
+    broadcastPublic('gallery_update');
     res.json({ success: true, message: 'Imagen eliminada' });
   } catch (err) {
     console.error('Error eliminando imagen de galería:', err);

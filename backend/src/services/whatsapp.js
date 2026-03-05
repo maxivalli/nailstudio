@@ -93,6 +93,10 @@ export const initWhatsApp = async () => {
 export const sendClientConfirmation = async (appointment) => {
   if (!isReady) return { success: false, error: 'Evolution API no configurada o no conectada' };
 
+  const serviceLine = appointment.service_name
+    ? `💅🏻 Servicio: ${appointment.service_name}${appointment.service_price && parseInt(appointment.service_price) > 0 ? ` — $${Number(appointment.service_price).toLocaleString('es-AR')}` : ' (precio a confirmar en el local)'}`
+    : '';
+
   const message = `
 ✨ SY Studio ✨ - Turno Confirmado
 
@@ -100,7 +104,7 @@ export const sendClientConfirmation = async (appointment) => {
 
 💖 Tu turno ha sido confirmado:
 📅 Día: ${formatDate(appointment.appointment_date)}
-🕐 Hora: ${appointment.appointment_hour}:00 – ${appointment.appointment_hour + 2}:00 hs (2 horas)
+🕐 Hora: ${appointment.appointment_hour}:00 – ${appointment.appointment_hour + 2}:00 hs (2 horas)${serviceLine ? `\n${serviceLine}` : ''}
 📍 Dirección: San Lorenzo 1260
 
 ¡Te esperamos! 💅

@@ -32,91 +32,107 @@ const authHeaders = () => {
   };
 };
 
+// Wrapper seguro: maneja errores de red y respuestas no-JSON (ej: 502 de Nginx)
+const safeFetch = async (url, options) => {
+  try {
+    const r = await fetch(url, options);
+    const contentType = r.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      return { success: false, error: `Error del servidor (${r.status}). Intentá de nuevo.` };
+    }
+    return await r.json();
+  } catch {
+    return { success: false, error: 'Error de conexión. Verificá tu internet e intentá de nuevo.' };
+  }
+};
+
 export const api = {
   // Auth
-  login: (username, password) => fetch(`${BASE}/auth/login`, {
+  login: (username, password) => safeFetch(`${BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
-  }).then(r => r.json()),
+  }),
 
-  verifyToken: () => fetch(`${BASE}/auth/verify`, {
+  verifyToken: () => safeFetch(`${BASE}/auth/verify`, {
     headers: authHeaders(),
-  }).then(r => r.json()),
+  }),
 
   // Appointments - calendar
   getAppointments: (from, to) => {
     const params = from && to ? `?from=${from}&to=${to}` : '';
-    return fetch(`${BASE}/appointments${params}`).then(r => r.json());
+    return safeFetch(`${BASE}/appointments${params}`);
   },
-  getAllAppointments: () => fetch(`${BASE}/appointments/all`, {
+  getAllAppointments: () => safeFetch(`${BASE}/appointments/all`, {
     headers: authHeaders(),
-  }).then(r => r.json()),
-  getStats: () => fetch(`${BASE}/appointments/stats`, {
+  }),
+  getStats: () => safeFetch(`${BASE}/appointments/stats`, {
     headers: authHeaders(),
-  }).then(r => r.json()),
-  getSlots: (date) => fetch(`${BASE}/appointments/slots/${date}`).then(r => r.json()),
-  createAppointment: (data) => fetch(`${BASE}/appointments`, {
+  }),
+  getSlots: (date) => safeFetch(`${BASE}/appointments/slots/${date}`),
+  createAppointment: (data) => safeFetch(`${BASE}/appointments`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
-  }).then(r => r.json()),
-  updateStatus: (id, status) => fetch(`${BASE}/appointments/${id}/status`, {
+  }),
+  updateStatus: (id, status) => safeFetch(`${BASE}/appointments/${id}/status`, {
     method: 'PATCH',
     headers: authHeaders(),
     body: JSON.stringify({ status }),
-  }).then(r => r.json()),
-  deleteAppointment: (id) => fetch(`${BASE}/appointments/${id}`, {
+  }),
+  deleteAppointment: (id) => safeFetch(`${BASE}/appointments/${id}`, {
     method: 'DELETE',
     headers: authHeaders(),
-  }).then(r => r.json()),
+  }),
 
   // Gallery
   getGallery: (category) => {
     const params = category ? `?category=${category}` : '';
-    return fetch(`${BASE}/gallery${params}`).then(r => r.json());
+    return safeFetch(`${BASE}/gallery${params}`);
   },
-  getGalleryCategories: () => fetch(`${BASE}/gallery/categories`).then(r => r.json()),
-  addGalleryItem: (data) => fetch(`${BASE}/gallery`, {
+  getGalleryCategories: () => safeFetch(`${BASE}/gallery/categories`),
+  addGalleryItem: (data) => safeFetch(`${BASE}/gallery`, {
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify(data),
-  }).then(r => r.json()),
-  updateGalleryItem: (id, data) => fetch(`${BASE}/gallery/${id}`, {
+  }),
+  updateGalleryItem: (id, data) => safeFetch(`${BASE}/gallery/${id}`, {
     method: 'PUT',
     headers: authHeaders(),
     body: JSON.stringify(data),
-  }).then(r => r.json()),
+  }),
+
   // Services
-  getServices: () => fetch(`${BASE}/services`).then(r => r.json()),
-  createService: (data) => fetch(`${BASE}/services`, {
+  getServices: () => safeFetch(`${BASE}/services`),
+  createService: (data) => safeFetch(`${BASE}/services`, {
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify(data),
-  }).then(r => r.json()),
-  updateService: (id, data) => fetch(`${BASE}/services/${id}`, {
+  }),
+  updateService: (id, data) => safeFetch(`${BASE}/services/${id}`, {
     method: 'PUT',
     headers: authHeaders(),
     body: JSON.stringify(data),
-  }).then(r => r.json()),
+  }),
+
   // Analytics
-  getServiceStats: () => fetch(`${BASE}/appointments/analytics/services`, {
+  getServiceStats: () => safeFetch(`${BASE}/appointments/analytics/services`, {
     headers: authHeaders(),
-  }).then(r => r.json()),
-  getFrequentClients: () => fetch(`${BASE}/appointments/analytics/clients`, {
+  }),
+  getFrequentClients: () => safeFetch(`${BASE}/appointments/analytics/clients`, {
     headers: authHeaders(),
-  }).then(r => r.json()),
-  getClientHistory: (whatsapp) => fetch(`${BASE}/appointments/analytics/client/${encodeURIComponent(whatsapp)}`, {
+  }),
+  getClientHistory: (whatsapp) => safeFetch(`${BASE}/appointments/analytics/client/${encodeURIComponent(whatsapp)}`, {
     headers: authHeaders(),
-  }).then(r => r.json()),
+  }),
 
-  deleteService: (id) => fetch(`${BASE}/services/${id}`, {
+  deleteService: (id) => safeFetch(`${BASE}/services/${id}`, {
     method: 'DELETE',
     headers: authHeaders(),
-  }).then(r => r.json()),
+  }),
 
-  deleteGalleryItem: (id) => fetch(`${BASE}/gallery/${id}`, {
+  deleteGalleryItem: (id) => safeFetch(`${BASE}/gallery/${id}`, {
     method: 'DELETE',
     headers: authHeaders(),
-  }).then(r => r.json()),
+  }),
 };

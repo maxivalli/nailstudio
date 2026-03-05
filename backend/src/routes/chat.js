@@ -14,6 +14,12 @@ let promptCache = null;
 let promptCacheTime = 0;
 const PROMPT_CACHE_TTL = 5 * 60 * 1000; // 5 minutos
 
+// Exportada para que el router de servicios la llame al crear/editar/eliminar
+export const invalidatePromptCache = () => {
+  promptCache = null;
+  promptCacheTime = 0;
+};
+
 const buildSystemPrompt = async () => {
   const now = Date.now();
   if (promptCache && (now - promptCacheTime) < PROMPT_CACHE_TTL) {
