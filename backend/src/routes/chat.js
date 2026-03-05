@@ -51,13 +51,17 @@ ${servicesList}
 ATIENDE: Sofía Ybarra
 ¿TRABAJAN A DOMICILIO?: No, solo atendemos en nuestro salón.
 ¿TRABAJAN SIN TURNO?: No, solo atendemos con turno previo.
-INSTAGRAM: @systudio
+INSTAGRAM: @systudio → https://instagram.com/systudio
 HORARIOS: Lunes a sábado, 8:00 a 20:00. Turnos de 2 horas.
 TURNOS: Se sacan desde la web, en la sección "Sacar turno".
 UBICACIÓN: San Cristóbal, Santa Fe, Argentina. La dirección exacta se confirma al sacar el turno.
-WHATSAPP: +5493408680476
+WHATSAPP: +5493408680476 → https://wa.me/5493408680476
 
-Si te preguntan algo que no sabés, decí amablemente que pueden escribir por Instagram o WhatsApp y proporcionar los links directos.
+Cuando menciones Instagram o WhatsApp, SIEMPRE incluí el link usando este formato exacto: [texto del link](url)
+Ejemplos:
+- "Podés escribirnos por [WhatsApp](https://wa.me/5493408680476) o seguirnos en [Instagram](https://instagram.com/systudio)"
+- "¡Encontranos en [Instagram](https://instagram.com/systudio)!"
+Si te preguntan algo que no sabés, derivá amablemente por [WhatsApp](https://wa.me/5493408680476) o [Instagram](https://instagram.com/systudio).
 No inventes precios ni servicios que no estén en la lista.`;
 
   promptCache = prompt;

@@ -2,6 +2,33 @@ import { useState, useRef, useEffect } from "react";
 import "./Chatbot.css";
 
 
+// Convierte [texto](url) en links clicables, respetando el resto del texto
+const renderMessage = (content) => {
+  const parts = content.split(/(\[[^\]]+\]\(https?:\/\/[^)]+\))/g);
+  return parts.map((part, i) => {
+    const match = part.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/);
+    if (match) {
+      return (
+        <a
+          key={i}
+          href={match[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: 'inherit',
+            textDecoration: 'underline',
+            textDecorationColor: 'rgba(0,0,0,0.3)',
+            textUnderlineOffset: '2px',
+          }}
+        >
+          {match[1]}
+        </a>
+      );
+    }
+    return part;
+  });
+};
+
 const Chatbot = () => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -131,7 +158,7 @@ const Chatbot = () => {
               {msg.role === "assistant" && (
                 <div className="chatbot-msg__icon">✦</div>
               )}
-              <div className="chatbot-msg__bubble">{msg.content}</div>
+              <div className="chatbot-msg__bubble">{msg.role === 'assistant' ? renderMessage(msg.content) : msg.content}</div>
             </div>
           ))}
           {loading && (

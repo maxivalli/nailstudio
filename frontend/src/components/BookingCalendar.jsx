@@ -330,7 +330,7 @@ const HourPicker = ({ date, onSelectSlot, onBack }) => {
 };
 
 // ─── Booking Form ─────────────────────────────────────────────────────────────
-const BookingForm = ({ date, slot, onBack, onSuccess }) => {
+const BookingForm = ({ date, slot, onBack, onSuccess, prefilledDesign, onDesignUsed }) => {
   const [form, setForm] = useState({ name: "", whatsapp: "", service_id: "", service_name: "", service_price: "" });
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -339,6 +339,11 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
   useEffect(() => {
     api.getServices().then(res => { if (res.success) setServices(res.data); });
   }, []);
+
+  // Si viene un diseño precargado, agregarlo como nota en el nombre del servicio
+  const designNote = prefilledDesign
+    ? `${prefilledDesign.color}${prefilledDesign.style ? ` · ${prefilledDesign.style}` : ''}${prefilledDesign.description ? ` · ${prefilledDesign.description}` : ''}`
+    : null;
 
   const d = new Date(date + "T12:00:00");
   const dayLabel = `${DAY_NAMES_FULL[d.getDay()]} ${d.getDate()} de ${MONTH_NAMES[d.getMonth()]}`;
@@ -379,8 +384,7 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
         service_price: form.service_price,
       });
       if (res.success) {
-        // El servidor ya no devuelve whatsapp por seguridad — lo agregamos desde el form
-        // ya que el cliente lo ingresó y tiene derecho a verlo en la confirmación
+        if (onDesignUsed) onDesignUsed();
         onSuccess({ ...res.data, whatsapp: form.whatsapp.trim() });
       } else {
         setError(res.error || "Ocurrió un error");
@@ -450,6 +454,17 @@ const BookingForm = ({ date, slot, onBack, onSuccess }) => {
           </span>
         </div>
       </div>
+
+      {/* Banner de diseño generado */}
+      {prefilledDesign && (
+        <div className="bc-design-preview fade-in">
+          <img src={prefilledDesign.imageUrl} alt="Diseño elegido" className="bc-design-preview__img" />
+          <div className="bc-design-preview__info">
+            <span className="bc-design-preview__label">✦ Tu diseño elegido</span>
+            <span className="bc-design-preview__desc">{designNote}</span>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} noValidate className="bc-form__fields">
         <div className="bc-field">
@@ -646,7 +661,7 @@ const Confirmation = ({ appointment, onReset }) => {
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-const BookingCalendar = () => {
+const BookingCalendar = ({ prefilledDesign, onDesignUsed }) => {
   const [step, setStep] = useState(0); // 0=calendar, 1=hours, 2=form, 3=confirm
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
   const [selectedDate, setSelectedDate] = useState(null);
@@ -815,6 +830,8 @@ const BookingCalendar = () => {
             slot={selectedSlot}
             onBack={() => setStep(1)}
             onSuccess={handleConfirm}
+            prefilledDesign={prefilledDesign}
+            onDesignUsed={onDesignUsed}
           />
         )}
         {step === 3 && confirmedAppt && (

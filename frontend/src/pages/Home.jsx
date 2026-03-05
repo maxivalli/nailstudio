@@ -1,9 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Gallery from '../components/Gallery';
 import BookingCalendar from '../components/BookingCalendar';
+import NailDesignGenerator from '../components/NailDesignGenerator';
 import './Home.css';
 
 const Home = () => {
+  const [prefilledDesign, setPrefilledDesign] = useState(null);
+  const bookingRef = useRef(null);
+
+  const handleBookWithDesign = (design) => {
+    setPrefilledDesign(design);
+    setTimeout(() => {
+      bookingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
   useEffect(() => {
     document.title = 'Turnos & Galería — SY Studio';
   }, []);
@@ -41,8 +51,53 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Nail Design Generator Section */}
+      <section id="generador" className="home-section home-section--alt">
+        <div className="home-section__inner">
+          <div className="home-section__col">
+            <div className="home-section__eyebrow">Powered by IA</div>
+            <h2 className="home-section__title">Diseñá tus<br /><em>uñas ideales</em></h2>
+            <p className="home-section__sub">
+              Elegí un color, un estilo y dejá que la IA cree un diseño personalizado para vos.
+              Si te gusta, podés reservar el turno directo.
+            </p>
+            <div className="home-section__features">
+              <div className="home-feature">
+                <div className="home-feature__icon">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <path d="M7.5 1L9.5 5.5L14 6.5L10.5 10L11.5 14.5L7.5 12.5L3.5 14.5L4.5 10L1 6.5L5.5 5.5L7.5 1Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <span>20 colores y 10 estilos</span>
+              </div>
+              <div className="home-feature">
+                <div className="home-feature__icon">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" strokeWidth="1"/>
+                    <path d="M7.5 4V7.5L10 9.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                  </svg>
+                </div>
+                <span>Resultado en segundos</span>
+              </div>
+              <div className="home-feature">
+                <div className="home-feature__icon">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <rect x="1" y="2" width="13" height="12" rx="1" stroke="currentColor" strokeWidth="1"/>
+                    <path d="M1 6H14M5 1V3.5M10 1V3.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                  </svg>
+                </div>
+                <span>Reservá el turno directo</span>
+              </div>
+            </div>
+          </div>
+          <div className="home-section__col home-section__col--form">
+            <NailDesignGenerator onBookWithDesign={handleBookWithDesign} />
+          </div>
+        </div>
+      </section>
+
       {/* Booking Section */}
-      <section id="queue" className="home-section home-section--alt">
+      <section id="queue" className="home-section" ref={bookingRef}>
         <div className="home-section__inner">
           <div className="home-section__col">
             <div className="home-section__eyebrow">Turnos online</div>
@@ -83,7 +138,7 @@ const Home = () => {
           </div>
 
           <div className="home-section__col home-section__col--form">
-            <BookingCalendar />
+            <BookingCalendar prefilledDesign={prefilledDesign} onDesignUsed={() => setPrefilledDesign(null)} />
           </div>
         </div>
       </section>

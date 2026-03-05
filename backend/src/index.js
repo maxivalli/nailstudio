@@ -9,6 +9,7 @@ import chatRouter from './routes/chat.js';
 import servicesRouter from './routes/services.js';
 import authRouter from './routes/auth.js';
 import settingsRouter from './routes/settings.js';
+import nailgenRouter from './routes/nailgen.js';
 import { initWhatsApp, getWhatsAppInfo } from './services/whatsapp.js';
 import { authMiddleware, authMiddlewareSSE } from './controllers/auth.js';
 import { initScheduler } from './services/scheduler.js';
@@ -107,6 +108,7 @@ app.use('/api/gallery', galleryRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/services', servicesRouter);
 app.use('/api/settings', settingsRouter);
+app.use('/api/nailgen', nailgenRouter);
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 

@@ -136,6 +136,13 @@ export const api = {
     headers: authHeaders(),
   }),
 
+  // Nail design generator
+  generateNailDesign: (color, style, description) => safeFetch(`${BASE}/nailgen`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ color, style, description }),
+  }),
+
   // Maintenance mode
   getMaintenance: () => safeFetch(`${BASE}/settings/maintenance`),
   setMaintenance: (active, message) => safeFetch(`${BASE}/settings/maintenance`, {
